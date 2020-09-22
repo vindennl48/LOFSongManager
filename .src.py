@@ -1,6 +1,7 @@
 import os
 import shutil
 from glob import glob
+from pathlib import Path
 
 
 ## HELPERS
@@ -27,7 +28,8 @@ def unzip_file(file, destination):
 
 def ffmpeg(args):
     if os.name == 'nt':
-        os.system(f'"ffmpeg//bin//ffmpeg.exe" {args}')
+        cwd = Path.cwd()
+        os.system(f'"{cwd}//ffmpeg//bin//ffmpeg.exe" {args}')
     else:
         os.system(f"ffmpeg {args}")
 
@@ -42,6 +44,24 @@ def mkdir(path):
         os.mkdir(path)
     except:
         pass
+
+def recursive_overwrite(src, dest, ignore=None):
+    # taken from: https://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all
+    if os.path.isdir(src):
+        if not os.path.isdir(dest):
+            os.makedirs(dest)
+        files = os.listdir(src)
+        if ignore is not None:
+            ignored = ignore(src, files)
+        else:
+            ignored = set()
+        for f in files:
+            if f not in ignored:
+                recursive_overwrite(os.path.join(src, f),
+                                    os.path.join(dest, f),
+                                    ignore)
+    else:
+        shutil.copyfile(src, dest)
 
 def display_title(text):
     print(f"###############################")
@@ -109,7 +129,8 @@ def extract():
         name = split_path(path)[-1]
         if name != "Media":
             # os.system(f"cp -vR {path} {extracted_path}/.")
-            shutil.copytree(path, f"{extracted_path}//.")
+            # shutil.copytree(path, f"{extracted_path}//.")
+            recursive_overwrite(path, f"{extracted_path}//{name}")
 
     # Convert all media files to wav from temp dir
     mkdir(f"{extracted_path}//Media")
@@ -117,7 +138,7 @@ def extract():
     for file_path in file_paths:
         file_name = split_path(file_path)[-1].replace(".mp3","")
         if not os.path.exists(f"{extracted_path}//Media//{file_name}.wav"):
-            ffmpeg(f'-i "{temp_path}//Media//{file_name}.mp3" -c:a pcm_s24le "{extracted_path}//Media//{file_name}.wav"')
+            ffmpeg(f"-i {temp_path}//Media//{file_name}.mp3 -c:a pcm_s24le {extracted_path}//Media//{file_name}.wav")
             # os.system(f'ffmpeg -i "{temp_path}/Media/{file_name}.mp3" -c:a pcm_s24le "{extracted_path}/Media/{file_name}.wav"')
 
     # Clean up after ourselves
