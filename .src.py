@@ -31,6 +31,12 @@ def ffmpeg(args):
     else:
         os.system(f"ffmpeg {args}")
 
+def split_path(path):
+    if os.name == 'nt':
+        return path.split("\\")
+    else:
+        return path.split("/")
+
 def display_title(text):
     print(f"###############################")
     print(f"  LOF Studio One Song Manager  ")
@@ -72,7 +78,7 @@ def extract():
 
     # Get extracted project names and list them
     project_file_paths = glob("compressed_songs/*.zip")
-    project_files      = [ x.split("/")[-1] for x in project_file_paths ]
+    project_files      = [ split_path(x)[-1] for x in project_file_paths ]
     project_files      = [ x.replace(".zip","") for x in project_files ]
     ans = list_options(project_files)
     ans = int(ans)-1
@@ -91,7 +97,7 @@ def extract():
     # os.system(f"unzip {project_file_path} -d ./temp")
     os.system(f"mkdir {extracted_path}")
     for path in glob(f"{temp_path}/*"):
-        name = path.split("/")[-1]
+        name = split_path(path)[-1]
         if name != "Media":
             # os.system(f"cp -vR {path} {extracted_path}/.")
             shutil.copytree(path, f"{extracted_path}/.")
@@ -100,7 +106,7 @@ def extract():
     os.system(f"mkdir {extracted_path}/Media")
     file_paths = glob(f"{temp_path}/Media/*.mp3")
     for file_path in file_paths:
-        file_name = file_path.split("/")[-1].replace(".mp3","")
+        file_name = split_path(file_path)[-1].replace(".mp3","")
         if not os.path.exists(f"{extracted_path}/Media/{file_name}.wav"):
             ffmpeg(f'-i "{temp_path}/Media/{file_name}.mp3" -c:a pcm_s24le "{extracted_path}/Media/{file_name}.wav"')
             # os.system(f'ffmpeg -i "{temp_path}/Media/{file_name}.mp3" -c:a pcm_s24le "{extracted_path}/Media/{file_name}.wav"')
@@ -117,7 +123,7 @@ def compress():
 
     # Get extracted project names and list them
     project_file_paths = glob("extracted_songs/*/")
-    project_files      = [ x.split("/")[-2] for x in project_file_paths ]
+    project_files      = [ split_path(x)[-2] for x in project_file_paths ]
     ans = list_options(project_files)
     ans = int(ans)-1
 
@@ -141,7 +147,7 @@ def compress():
     if not os.path.exists(f"{temp_path}"):
         os.system(f"mkdir {temp_path}")
     for path in glob(f"{project_file_path}/*"):
-        name = path.split("/")[-1]
+        name = split_path(path)[-1]
         if name != "Media":
             os.system(f"cp -R {path} {temp_path}/.")
 
@@ -149,7 +155,7 @@ def compress():
     os.system(f"mkdir {temp_path}/Media")
     file_paths = glob(f"{project_file_path}/Media/*.wav")
     for file_path in file_paths:
-        file_name = file_path.split("/")[-1].replace(".wav","")
+        file_name = split_path(file_path)[-1].replace(".wav","")
         if not os.path.exists(f"{temp_path}/Media/{file_name}.mp3"):
             ffmpeg(f'-i "{project_file_path}/Media/{file_name}.wav" "{temp_path}/Media/{file_name}.mp3"')
             # os.system(f'ffmpeg -i "{project_file_path}/Media/{file_name}.wav" "{temp_path}/Media/{file_name}.mp3"')
