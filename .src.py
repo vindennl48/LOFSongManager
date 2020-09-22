@@ -190,7 +190,8 @@ def compress():
     for path in glob(f"{project_file_path}//*"):
         name = split_path(path)[-1]
         if name != "Media":
-            os.system(f"cp -R {path} {temp_path}//.")
+            recursive_overwrite(path, f"{temp_path}//{name}")
+            # os.system(f"cp -R {path} {temp_path}//.")
 
     # Convert all media files to mp3 in temp dir
     mkdir(f"{temp_path}//Media")
@@ -198,7 +199,8 @@ def compress():
     for file_path in file_paths:
         file_name = split_path(file_path)[-1].replace(".wav","")
         if not os.path.exists(f"{temp_path}//Media//{file_name}.mp3"):
-            ffmpeg(f'-i "{project_file_path}//Media//{file_name}.wav" "{temp_path}//Media//{file_name}.mp3"')
+            ffmpeg("-i", f"{project_file_path}//Media//{file_name}.wav", f"{temp_path}//Media//{file_name}.mp3")
+            # ffmpeg(f'-i "{project_file_path}//Media//{file_name}.wav" "{temp_path}//Media//{file_name}.mp3"')
             # os.system(f'ffmpeg -i "{project_file_path}/Media/{file_name}.wav" "{temp_path}/Media/{file_name}.mp3"')
 
     # os.system(f'for f in {project_file_path}/Media/*.wav; do ffmpeg -i "${{f}}" "${{f%.*}}.mp3"; done;')
