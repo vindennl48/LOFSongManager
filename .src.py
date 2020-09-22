@@ -26,12 +26,26 @@ def unzip_file(file, destination):
     else:
         os.system(f"unzip {file} -d {destination}")
 
-def ffmpeg(args):
+def ffmpeg(args, source, destination, codec=""):
     if os.name == 'nt':
+        command = [
+            args,
+            source,
+            codec,
+            destination,
+        ]
         cwd = Path.cwd()
-        os.system(f'"{cwd}//ffmpeg//bin//ffmpeg.exe" {args}')
+        command_string = f'"{cwd}//ffmpeg//bin//ffmpeg.exe" {" ".join(command)}'
+        os.system(command_string)
     else:
-        os.system(f"ffmpeg {args}")
+        command = [
+            args,
+            f'"{source}"',
+            codec,
+            f'"{destination}"',
+        ]
+        command_string = f'ffmpeg {" ".join(command)}'
+        os.system(command_string)
 
 def split_path(path):
     if os.name == 'nt':
@@ -128,8 +142,6 @@ def extract():
     for path in glob(f"{temp_path}//*"):
         name = split_path(path)[-1]
         if name != "Media":
-            # os.system(f"cp -vR {path} {extracted_path}/.")
-            # shutil.copytree(path, f"{extracted_path}//.")
             recursive_overwrite(path, f"{extracted_path}//{name}")
 
     # Convert all media files to wav from temp dir
@@ -138,8 +150,7 @@ def extract():
     for file_path in file_paths:
         file_name = split_path(file_path)[-1].replace(".mp3","")
         if not os.path.exists(f"{extracted_path}//Media//{file_name}.wav"):
-            ffmpeg(f"-i {temp_path}//Media//{file_name}.mp3 -c:a pcm_s24le {extracted_path}//Media//{file_name}.wav")
-            # os.system(f'ffmpeg -i "{temp_path}/Media/{file_name}.mp3" -c:a pcm_s24le "{extracted_path}/Media/{file_name}.wav"')
+            ffmpeg("-i", f"{temp_path}//Media//{file_name}.mp3", f"{extracted_path}//Media//{file_name}.wav", "-c:a pcm_s24le")
 
     # Clean up after ourselves
     clear_temp()
