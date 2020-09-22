@@ -6,6 +6,12 @@ from glob import glob
 def log(text):
     print("----> ", text)
 
+def clear_screen():
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
+
 def display_title(text):
     print(f"###############################")
     print(f"  LOF Studio One Song Manager  ")
@@ -41,7 +47,7 @@ def pause():
 
 ## MENU ITEMS
 def extract():
-    os.system('clear')
+    clear_screen()
 
     display_title("What project would you like?")
 
@@ -84,7 +90,7 @@ def extract():
     pause()
 
 def compress():
-    os.system('clear')
+    clear_screen()
 
     display_title("What project would you like?")
 
@@ -136,7 +142,7 @@ def compress():
     pause()
 
 def update_program():
-    os.system('clear')
+    clear_screen()
 
     display_title("Updates")
 
@@ -157,7 +163,7 @@ def main_menu():
     # Create default file structure if it doesnt exist
     os.system("mkdir -p compressed_songs extracted_songs temp templates")
 
-    os.system('clear')
+    clear_screen()
     display_title("What would you like to do?")
 
     menu_items = [
