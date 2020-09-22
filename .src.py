@@ -37,6 +37,12 @@ def split_path(path):
     else:
         return path.split("/")
 
+def mkdir(path):
+    try:
+        os.mkdir(path)
+    except:
+        pass
+
 def display_title(text):
     print(f"###############################")
     print(f"  LOF Studio One Song Manager  ")
@@ -66,7 +72,7 @@ def clear_temp():
         os.system("rd /s /q temp")
     else:
         os.system("rm -rf temp")
-    os.system("mkdir temp")
+    mkdir("temp")
 
 def pause():
     log("Press Enter to Continue..")
@@ -98,7 +104,7 @@ def extract():
     # Unzip compressed project
     unzip_file(project_file_path, "temp")
     # os.system(f"unzip {project_file_path} -d ./temp")
-    os.system(f"mkdir {extracted_path}")
+    mkdir(f"{extracted_path}")
     for path in glob(f"{temp_path}//*"):
         name = split_path(path)[-1]
         if name != "Media":
@@ -106,7 +112,7 @@ def extract():
             shutil.copytree(path, f"{extracted_path}//.")
 
     # Convert all media files to wav from temp dir
-    os.system(f"mkdir {extracted_path}//Media")
+    mkdir(f"{extracted_path}//Media")
     file_paths = glob(f"{temp_path}//Media//*.mp3")
     for file_path in file_paths:
         file_name = split_path(file_path)[-1].replace(".mp3","")
@@ -144,18 +150,18 @@ def compress():
         unzip_file(compressed_path, "temp")
         # os.system(f"unzip {compressed_path} -d ./temp")
     else:
-        os.system(f"mkdir {temp_path}")
+        mkdir(f"{temp_path}")
 
     # Copy everything to temp except media dir
     if not os.path.exists(f"{temp_path}"):
-        os.system(f"mkdir {temp_path}")
+        mkdir(f"{temp_path}")
     for path in glob(f"{project_file_path}//*"):
         name = split_path(path)[-1]
         if name != "Media":
             os.system(f"cp -R {path} {temp_path}//.")
 
     # Convert all media files to mp3 in temp dir
-    os.system(f"mkdir {temp_path}//Media")
+    mkdir(f"{temp_path}//Media")
     file_paths = glob(f"{project_file_path}//Media//*.wav")
     for file_path in file_paths:
         file_name = split_path(file_path)[-1].replace(".wav","")
@@ -194,7 +200,10 @@ def exit_program():
 ## MAIN MENU
 def main_menu():
     # Create default file structure if it doesnt exist
-    os.system("mkdir compressed_songs extracted_songs temp templates")
+    mkdir("compressed_songs")
+    mkdir("extracted_songs")
+    mkdir("temp")
+    mkdir("templates")
 
     clear_screen()
     display_title("What would you like to do?")
