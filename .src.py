@@ -14,17 +14,17 @@ def clear_screen():
     else:
         os.system('clear')
 
-def zip_file():
+def tar_file(file, destination):
     if os.name == 'nt':
         os.system(f"tar -cf {destination} {file}")
     else:
-        os.system(f"cd temp; zip -r .{destination} {file}")
+        os.system(f"cd temp; tar -czf ..//{destination} {file}")
 
-def unzip_file(file, destination):
+def untar_file(file, destination):
     if os.name == 'nt':
         os.system(f"tar -xf {file} -C {destination}")
     else:
-        os.system(f"unzip {file} -d {destination}")
+        os.system(f"tar -xzf {file} -C {destination}")
 
 def ffmpeg(args, source, destination, codec=""):
     if os.name == 'nt':
@@ -120,9 +120,9 @@ def extract():
     display_title("What project would you like?")
 
     # Get extracted project names and list them
-    project_file_paths = glob("compressed_songs//*.zip")
+    project_file_paths = glob("compressed_songs//*.lof")
     project_files      = [ split_path(x)[-1] for x in project_file_paths ]
-    project_files      = [ x.replace(".zip","") for x in project_files ]
+    project_files      = [ x.replace(".lof","") for x in project_files ]
     ans = list_options(project_files)
     ans = int(ans)-1
 
@@ -135,9 +135,9 @@ def extract():
     # Make sure the temp file is cleared and make temp dir
     clear_temp()
 
-    # Unzip compressed project
-    unzip_file(project_file_path, "temp")
-    # os.system(f"unzip {project_file_path} -d ./temp")
+    # Untar compressed project
+    untar_file(project_file_path, "temp")
+    # os.system(f"untar {project_file_path} -d ./temp")
     mkdir(f"{extracted_path}")
     for path in glob(f"{temp_path}//*"):
         name = split_path(path)[-1]
@@ -171,7 +171,7 @@ def compress():
     # Generate paths for all of our files and dirs
     project_file      = project_files[ans]
     project_file_path = project_file_paths[ans][:-1]
-    compressed_path   = f"compressed_songs//{project_file}.zip"
+    compressed_path   = f"compressed_songs//{project_file}.lof"
     temp_path         = f"temp//{project_file}"
 
     # Make sure the temp file is cleared and make temp dir
@@ -179,8 +179,8 @@ def compress():
 
     # Extract existing compressed project first if exists
     if os.path.exists(f"{compressed_path}"):
-        unzip_file(compressed_path, "temp")
-        # os.system(f"unzip {compressed_path} -d ./temp")
+        untar_file(compressed_path, "temp")
+        # os.system(f"untar {compressed_path} -d ./temp")
     else:
         mkdir(f"{temp_path}")
 
@@ -205,8 +205,8 @@ def compress():
 
     # os.system(f'for f in {project_file_path}/Media/*.wav; do ffmpeg -i "${{f}}" "${{f%.*}}.mp3"; done;')
     # os.system(f"mv {project_file_path}/Media/*.mp3 {temp_path}/Media/.")
-    zip_file(project_file, compressed_path)
-    # os.system(f"cd temp; zip -r .{compressed_path} {project_file}")
+    tar_file(project_file, compressed_path)
+    # os.system(f"cd temp; tar -r .{compressed_path} {project_file}")
 
     # Clean up after ourselves
     clear_temp()
