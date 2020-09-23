@@ -102,6 +102,13 @@ def clear_temp():
         os.system("rm -rf temp")
     mkdir("temp")
 
+def git_update():
+    if os.name == 'nt':
+        cwd = Path.cwd()
+        os.system(f'"{cwd}//PortableGit//bin//git" pull --rebase')
+    else:
+        os.system("git pull --rebase")
+
 def pause():
     log("Press Enter to Continue..")
     input()
@@ -214,10 +221,10 @@ def update_program():
     display_title("Updates")
 
     log("Checking for updates..")
-    os.system("git pull")
+    git_update()
     log("Update Complete!")
-    input()
 
+    pause()
     exit_program()
 
 def exit_program():
