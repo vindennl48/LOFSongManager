@@ -15,16 +15,10 @@ def clear_screen():
         os.system('clear')
 
 def tar_file(file, destination):
-    if os.name == 'nt':
-        os.system(f"tar -cf {destination} {file}")
-    else:
-        os.system(f"cd temp; tar -czf ..//{destination} {file}")
+    os.system(f'cd temp && tar -czf "..//{destination}" "{file}" && cd ..')
 
 def untar_file(file, destination):
-    if os.name == 'nt':
-        os.system(f"tar -xf {file} -C {destination}")
-    else:
-        os.system(f"tar -xzf {file} -C {destination}")
+    os.system(f"tar -xzf {file} -C {destination}")
 
 def ffmpeg(args, source, destination, codec=""):
     if os.name == 'nt':
