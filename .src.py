@@ -185,12 +185,12 @@ def compress():
     else:
         mkdir(f"{temp_path}")
 
-    # Copy everything to temp except media dir
+    # Copy everything to temp except media and cache dir
     if not os.path.exists(f"{temp_path}"):
         mkdir(f"{temp_path}")
     for path in glob(f"{project_file_path}//*"):
         name = split_path(path)[-1]
-        if name != "Media":
+        if name != "Media" and name != "Cache":
             recursive_overwrite(path, f"{temp_path}//{name}")
             # os.system(f"cp -R {path} {temp_path}//.")
 
