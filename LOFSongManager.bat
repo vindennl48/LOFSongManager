@@ -1,4 +1,4 @@
 @echo off
 
-python .src.py
+python .main.py
 
