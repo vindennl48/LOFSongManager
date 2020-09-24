@@ -3,6 +3,9 @@ from pathlib import Path
 from src.helpers import *
 
 def compress(main_menu):
+    log("temporarily blocked..")
+    pause()
+    exit()
     clear_screen()
 
     display_title("What project would you like?")

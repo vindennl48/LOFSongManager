@@ -52,7 +52,7 @@ def ffmpeg(args, source, destination, codec=""):
             codec,
             destination,
         ]
-        ffmpeg_path = Path("ffmpeg/bin/ffmpeg.exe")
+        ffmpeg_path = Path("src/ffmpeg/bin/ffmpeg.exe")
         command_string = f'"{ffmpeg_path.absolute()}" {" ".join(command)}'
     else:
         command = [
@@ -77,6 +77,8 @@ def mp3_to_wav(directory, destination):
         wav = Path(f"{destination}/{mp3.stem}.wav")
         if not wav.is_file():
             ffmpeg("-i", mp3.absolute(), wav.absolute(), "-c:a pcm_s24le")
+        else:
+            log(f'Keeping file "{wav.name}"')
 
 def wav_to_mp3(directory, destination):
     # Directory is where the mp3's are stored
@@ -90,6 +92,8 @@ def wav_to_mp3(directory, destination):
         mp3 = Path(f"{destination}/{wav.stem}.mp3")
         if not mp3.is_file():
             ffmpeg("-i", wav.absolute(), mp3.absolute())
+        else:
+            log(f'Keeping file "{mp3.name}"')
 
 def mkdir(path):
     path = Path(path)
@@ -100,9 +104,11 @@ def mkdir(path):
         exit()
     elif path.is_dir():
         log(f'Warning: Directory "{path.name}" already exists!')
+        return False
     else:
         os.makedirs(path.absolute())
         log(f'Created directory "{path.name}"')
+        return True
 
 def recursive_overwrite(src, dest, ignore=None):
     # taken from: https://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all
@@ -125,11 +131,7 @@ def recursive_overwrite(src, dest, ignore=None):
 
         if dest.exists():
             if not filecmp.cmp(src.absolute(), dest.absolute(), shallow=False):
-                log(f'File conflict for "{src}"')
-                if input(f'Would you like to overwrite the original? \n(y/n): ') != "y":
-                    log("Keeping original file")
-                    return 0
-                log("Overwriting original file")
+                log(f'Overwriting file "{src.name}"')
             else:
                 log(f'Keeping file "{src.name}"')
                 return 0
@@ -174,7 +176,7 @@ def clear_temp():
 
 def git_update():
     if os.name == 'nt':
-        git = Path("PortableGit/bin/git")
+        git = Path("src/PortableGit/bin/git")
         os.system(f'"{git.absolute()}" pull --rebase')
     else:
         os.system("git pull --rebase")
