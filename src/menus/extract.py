@@ -6,7 +6,7 @@ from src.helpers import *
 def extract(main_menu):
     clear_screen()
 
-    display_title("What project would you like?")
+    display_title("What project would you like to extract?")
 
     # Get extracted project names and list them
     comp_projects    = get_files("compressed_songs", "lof")
@@ -35,21 +35,20 @@ def extract(main_menu):
         print("")
         print("   Continue anyway?")
         if input("   (y/n): ") != 'y':
-            pause()
             return 0
 
     # Check to make sure there are no prior conflicts
     if local_conflict.exists():
         log("Warning: You still have existing conflicts!!")
         print("")
-        print(f':: Project file "{project}/{project.stem}_yourversion.song" still exists.')
+        print(f':: Project file "{local_conflict}" still exists.')
         print(f'   This gets created when there are conflicts between your local project')
         print(f'   and an updated project downloaded from the drive.  If these conflicts')
         print(f'   do not get resolved before you download yet another version, you will')
         print(f'   lose all of your local changes!')
         print("")
         print(f'   If you have ALREADY resolved these conflicts but have not yet deleted')
-        print(f'   "the {project}/{project.stem}_yourversion.song" file, then type "yes".')
+        print(f'   the "{local_conflict}" file, then type "yes".')
         print("")
         print(f'   If you have NOT yet resolved these conflicts, then type "no"')
         print("")
@@ -73,38 +72,39 @@ def extract(main_menu):
     for path in glob(f"{temp_project}/*"):
         path = Path(path)
 
-        if path.name == f"{project.stem}.song":
-            if local_original.exists() and local_version.exists():
-                # If you made changes to the studio one file, this wont overwrite your progress.  We will
-                #  save it as a different version so you can go back and compare the new downloaded 
-                #  version with your version.
-                if not filecmp.cmp(local_version.absolute(), local_original.absolute(), shallow=False):
-                    print("")
-                    print(f':: Local changes to this project have been detected!')
-                    print("")
-                    print(f'   When local changes are detected, this software will generate a secondary conflict version')
-                    print(f'   called: ')
-                    print("")
-                    print(f'       "{local_conflict}"')
-                    print("")
-                    print(f'   You must open both projects and copy your changes from ')
-                    print("")
-                    print(f'       "{local_conflict}" TO "{local_version}".')
-                    print("")
-                    print(f'   "{local_version.name}" is the only one that gets uploaded.')
-                    print("")
-                    print(f'   Unfortunately, it is not possible to handle these conflicts programatically at this time.')
-                    print("")
+        # catch all *.song files but ignore all but the main *.song file
+        if path.suffix == ".song":
+            if path.name == local_version.name:
+                if local_original.exists() and local_version.exists():
+                    # If you made changes to the studio one file, this wont overwrite your progress.  We will
+                    #  save it as a different version so you can go back and compare the new downloaded 
+                    #  version with your version.
+                    if not filecmp.cmp(local_version.absolute(), local_original.absolute(), shallow=False):
+                        print("")
+                        print(f':: Local changes to this project have been detected!')
+                        print("")
+                        print(f'   When local changes are detected, this software will generate a secondary conflict version')
+                        print(f'   called: ')
+                        print("")
+                        print(f'       "{local_conflict}"')
+                        print("")
+                        print(f'   You must open both projects and copy your changes from ')
+                        print("")
+                        print(f'       "{local_conflict}" TO "{local_version}".')
+                        print("")
+                        print(f'   "{local_version.name}" is the only one that gets uploaded.')
+                        print("")
+                        print(f'   Unfortunately, it is not possible to handle these conflicts programatically at this time.')
+                        print("")
+                        pause()
+                        recursive_overwrite(local_version.absolute(), local_conflict.absolute())
+                elif not local_version.exists() and not new_project:
+                    log(f'There is a problem.. No project file "{local_version}" exists..')
                     pause()
-                    recursive_overwrite(local_version.absolute(), local_conflict.absolute())
-            elif not local_version.exists() and not new_project:
-                log(f'There is a problem.. No project file "{local_version}" exists..')
-                pause()
-                exit()
+                    exit()
 
-            recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.name}")
-            recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.stem}_original.song")
-
+                recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.name}")
+                recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.stem}_original.song")
         elif path.name == "Media":
             mp3_to_wav(f"{temp_project}/Media", f"{project}/Media")
         elif path.name == "Bounces":

@@ -166,7 +166,7 @@ def list_options(options, back=False):
     else:
         log("Invalid response, please try again..")
         pause()
-        list_options(options, back)
+        return list_options(options, back)
 
 def clear_temp():
     log("Clearing out temp directory..")
