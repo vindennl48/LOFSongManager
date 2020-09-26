@@ -4,3 +4,5 @@ extracted_songs
 temp
 ffmpeg
 PortableGit
+credentials.json
+token.pickle
