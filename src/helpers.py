@@ -1,7 +1,6 @@
 import os
 import shutil
 import filecmp
-import hashlib
 from glob import glob
 from pathlib import Path
 
@@ -169,6 +168,14 @@ def list_options(options, back=False):
         pause()
         return list_options(options, back)
 
+def clear_folder(path):
+    path = Path(path)
+    log(f"Clearing out '{path.name}' directory..")
+    if path.exists():
+        shutil.rmtree(path.absolute())
+    mkdir(path.absolute())
+    log(f"'{path.name}' directory cleared!")
+
 def clear_temp():
     log("Clearing out temp directory..")
     shutil.rmtree("temp")
@@ -197,16 +204,3 @@ def get_files(directory, extension):
     files = glob(f"{directory.absolute()}/*.{extension}")
     files = [ Path(x) for x in files ]
     return files
-
-def hash_file(file):
-    file       = Path(file)
-    BLOCK_SIZE = 1024*1024
-    result     = hashlib.sha256()
-
-    with open(file.absolute(), 'rb') as f:
-        fb = f.read(BLOCK_SIZE)
-        while len(fb) > 0:
-            result.update(fb)
-            fb = f.read(BLOCK_SIZE)
-
-    return result.hexdigest()

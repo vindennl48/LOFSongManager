@@ -2,21 +2,38 @@ import filecmp
 from glob import glob
 from pathlib import Path
 from src.helpers import *
+from src.hashing import *
+from src.Drive import Drive
 
 def extract(main_menu):
-    clear_screen()
-
-    display_title("What project would you like to extract?")
+    print("")
+    log("loading projects from cloud..")
 
     # Get extracted project names and list them
-    comp_projects    = get_files("compressed_songs", "lof")
-    comp_project     = comp_projects[ list_options([ x.stem for x in comp_projects ], back=main_menu) ]
+    drive          = Drive()
+    drive_projects = drive.ls(path='Land of Fires/Audio/LOFSongManager')
+
+    clear_screen()
+    display_title("What project would you like to download and extract?")
+    drive_projects = [ x for x in drive_projects if x['mimeType'] == Drive.mimeType['zip'] ]
+    drive_project = drive_projects[ list_options([ x['name'] for x in drive_projects ], back=main_menu) ]
+
+    comp_project     = Path(f"compressed_songs/{drive_project['name']}")
     temp_project     = Path(f"temp/{comp_project.stem}")
     project          = Path(f"extracted_songs/{comp_project.stem}")
     local_original   = Path(f"{project}/{project.stem}_original.song")
     local_conflict   = Path(f"{project}/{project.stem}_yourversion.song")
     local_version    = Path(f"{project}/{project.stem}.song")
     download_version = Path(f"{temp_project}/{project.stem}.song")
+
+    # check hashes
+    if not compare_hash(drive, comp_project.name):
+        # We need to download the newest version
+        log("Downloading new version")
+        if not drive.download(drive_project['id'], comp_project.absolute()):
+            raise Exception('\n\n## Check your internet connection and try again! ##\n## Error when downloading project ##')
+        else:
+            set_local_hash_from_remote(drive, comp_project.name)
 
     # Make sure the temp file is cleared and make temp dir
     clear_temp()
@@ -31,9 +48,11 @@ def extract(main_menu):
         print(f':: You already have the most up-to-date project')
         print(f'   extracted for "{project.stem}"!')
         print("")
-        print(f'   Continuing is not advisable!')
+        print(f'   If you have any saved changes in this project, it will be converted')
+        print(f'   into a conflict file for you to re-merge again.  Only do this if you')
+        print(f'   wish to start fresh with the latest cloud project!')
         print("")
-        print("   Continue anyway?")
+        print("   Continue?")
         if input("   (y/n): ") != 'y':
             return 0
 
@@ -43,12 +62,14 @@ def extract(main_menu):
         print("")
         print(f':: Project file "{local_conflict}" still exists.')
         print(f'   This gets created when there are conflicts between your local project')
-        print(f'   and an updated project downloaded from the drive.  If these conflicts')
+        print(f'   and an updated project downloaded from the cloud.  If these conflicts')
         print(f'   do not get resolved before you download yet another version, you will')
         print(f'   lose all of your local changes!')
         print("")
-        print(f'   If you have ALREADY resolved these conflicts but have not yet deleted')
-        print(f'   the "{local_conflict}" file, then type "yes".')
+        print(f'   Note: Your audio files will not be erased from the pool.')
+        print(f'         You can ignore the message before this.')
+        print("")
+        print(f'   If you have ALREADY resolved these conflicts, then type "yes"')
         print("")
         print(f'   If you have NOT yet resolved these conflicts, then type "no"')
         print("")
@@ -68,6 +89,11 @@ def extract(main_menu):
     # Make dir for new song if it doesnt exist
     new_project = mkdir(project)
 
+    # if there are any new changes to this project, return True
+    has_conflicts = False
+    if not new_project:
+        has_conflicts = not filecmp.cmp(local_version.absolute(), local_original.absolute(), shallow=False)
+
     # Copy or convert files to extracted_songs dir
     for path in glob(f"{temp_project}/*"):
         path = Path(path)
@@ -79,7 +105,7 @@ def extract(main_menu):
                     # If you made changes to the studio one file, this wont overwrite your progress.  We will
                     #  save it as a different version so you can go back and compare the new downloaded 
                     #  version with your version.
-                    if not filecmp.cmp(local_version.absolute(), local_original.absolute(), shallow=False):
+                    if has_conflicts:
                         print("")
                         print(f':: Local changes to this project have been detected!')
                         print("")
@@ -94,8 +120,6 @@ def extract(main_menu):
                         print("")
                         print(f'   "{local_version.name}" is the only one that gets uploaded.')
                         print("")
-                        print(f'   Unfortunately, it is not possible to handle these conflicts programatically at this time.')
-                        print("")
                         pause()
                         recursive_overwrite(local_version.absolute(), local_conflict.absolute())
                 elif not local_version.exists() and not new_project:
@@ -106,8 +130,16 @@ def extract(main_menu):
                 recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.name}")
                 recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.stem}_original.song")
         elif path.name == "Media":
+            if not has_conflicts:
+                # remove audio files in media folder
+                clear_folder(f"{project}/Media")
+
             mp3_to_wav(f"{temp_project}/Media", f"{project}/Media")
         elif path.name == "Bounces":
+            if not has_conflicts:
+                # remove audio files in bounces folder
+                clear_folder(f"{project}/Bounces")
+
             mp3_to_wav(f"{temp_project}/Bounces", f"{project}/Bounces")
         else:
             recursive_overwrite(path.absolute(), f"{project.absolute()}/{path.name}")
