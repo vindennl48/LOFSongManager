@@ -1,10 +1,15 @@
 from glob import glob
 from pathlib import Path
 from src.helpers import *
+from src.Drive import Drive
+from src.hashing import *
 
 def compress(main_menu):
-    clear_screen()
+    # Get extracted project names and list them
+    drive          = Drive()
+    drive_projects = drive.ls(path='Land of Fires/Audio/LOFSongManager')
 
+    clear_screen()
     display_title("What project would you like to compress?")
 
     # Get extracted project names and list them
@@ -18,6 +23,23 @@ def compress(main_menu):
     local_version    = Path(f"{project}/{project.stem}.song")
     download_version = Path(f"{temp_project}/{project.stem}.song")
 
+    # Check remote to see if a project exists on the cloud
+    yes_remote = check_remote_db(drive, comp_project.name)
+    if yes_remote:
+        # See if we have the latest project in the local cache
+        if not compare_hash(drive, comp_project.name):
+            # We can't upload if there is a newer version already up!
+            print("")
+            print(f':: A newer version exists on the cloud!')
+            print(f'   You can not upload a project when your version is older!')
+            print("")
+            print(f'   You must download the new version from the cloud and')
+            print(f'   merge the two projects before uploading.')
+            print("")
+            print(f'   Exiting..')
+            pause()
+            exit()
+
     # Make sure the temp file is cleared and make temp dir
     clear_temp()
 
@@ -28,7 +50,7 @@ def compress(main_menu):
         mkdir(temp_project)
 
     # If the compressed version is the same as the extracted version
-    if local_version.exists() and download_version.exists() \
+    if yes_remote and local_version.exists() and download_version.exists() \
             and filecmp.cmp(local_version.absolute(), download_version.absolute()):
         print("")
         print(f':: You already have the most up-to-date')
@@ -47,11 +69,10 @@ def compress(main_menu):
         print(f':: Project file "{local_conflict}" still exists.')
         print(f'   This gets created when there are conflicts between your local project')
         print(f'   and an updated project downloaded from the drive.  If these conflicts')
-        print(f'   do not get resolved before you download yet another version, you will')
-        print(f'   lose all of your local changes!')
+        print(f'   do not get resolved before you compress and upload, you will lose all')
+        print(f'   your local changes!')
         print("")
-        print(f'   If you have ALREADY resolved these conflicts but have not yet deleted')
-        print(f'   the "{local_conflict}" file, then type "yes".')
+        print(f'   If you have ALREADY resolved these conflicts, then type "yes"')
         print("")
         print(f'   If you have NOT yet resolved these conflicts, then type "no"')
         print("")
@@ -92,6 +113,13 @@ def compress(main_menu):
             #  The filesize isnt that expensive.
 
     tar_file(temp_project, comp_project)
+
+    log(f"Uploading '{comp_project.name}' to the cloud..\n      Please be patient..")
+    parent = drive.get_info(path='Land of Fires/Audio/LOFSongManager')
+    drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[parent['id']])
+
+    set_local_hash_from_file(comp_project.name, comp_project.absolute())
+    set_remote_hash_from_local(drive, comp_project.name)
 
     # Clean up after ourselves
     clear_temp()

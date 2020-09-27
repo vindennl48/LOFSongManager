@@ -48,6 +48,13 @@ def rm_local_db(key):
     with open(db_path.absolute(), 'w') as f:
         json.dump(db, f)
 
+def check_local_db(key):
+    db_path = Path(f"compressed_songs/db.json")
+    db      = get_local_db()
+    if key in db:
+        return True
+    return False
+
 def get_remote_db_raw(drive):
     try:
         return drive.get_info(path='Land of Fires/Audio/LOFSongManager/db.json')
@@ -80,7 +87,6 @@ def set_remote_db(drive, key, value):
     with open(temp_db_path.absolute(), 'w') as f:
         json.dump(temp_db, f)
 
-    parent = drive.get_info(path='Land of Fires/Audio/LOFSongManager')
     drive.update(temp_db_path.absolute(), Drive.mimeType['json'], get_remote_db_raw(drive)['id'])
 
 def rm_remote_db(drive, key):
@@ -91,8 +97,14 @@ def rm_remote_db(drive, key):
     with open(temp_db_path.absolute(), 'w') as f:
         json.dump(temp_db, f)
 
-    parent = drive.get_info(path='Land of Fires/Audio/LOFSongManager')
     drive.update(temp_db_path.absolute(), Drive.mimeType['json'], get_remote_db_raw(drive)['id'])
+
+def check_remote_db(drive, key):
+    temp_db_path = Path('temp/db.json')
+    temp_db      = get_remote_db(drive)
+    if key in temp_db:
+        return True
+    return False
 
 def compare_hash(drive, name):
     db        = get_local_db()

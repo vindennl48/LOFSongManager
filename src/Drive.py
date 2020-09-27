@@ -118,6 +118,8 @@ class Drive:
             )
         )
 
+        print(f"----> Uploaded 0%", end="\r", flush=True)
+
         response = None
         while response is None:
             status, response = file.next_chunk()
@@ -143,6 +145,8 @@ class Drive:
             )
         )
 
+        print(f"----> Uploaded 0%", end="\r", flush=True)
+
         response = None
         while response is None:
             status, response = file.next_chunk()
@@ -151,6 +155,21 @@ class Drive:
 
         if file:
             print("Uploaded successfully!")
+
+    def update_or_upload(self, file, mimeType, parents=['root']):
+        file = Path(file)
+
+        # Check to see if the file is already uploaded
+        results = self.ls(search=parents[0])
+        for r in results:
+            if r['name'] == file.name:
+                # Update
+                self.update(file, mimeType, r['id'])
+                return True
+
+        # Upload
+        self.upload(file, mimeType, parents=parents)
+        return True
 
     def download(self, id=None, save_path=None):
         if not id or not save_path:
