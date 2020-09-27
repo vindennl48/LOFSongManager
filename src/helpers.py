@@ -1,6 +1,7 @@
 import os
 import shutil
 import filecmp
+import hashlib
 from glob import glob
 from pathlib import Path
 
@@ -196,3 +197,16 @@ def get_files(directory, extension):
     files = glob(f"{directory.absolute()}/*.{extension}")
     files = [ Path(x) for x in files ]
     return files
+
+def hash_file(file):
+    file       = Path(file)
+    BLOCK_SIZE = 1024*1024
+    result     = hashlib.sha256()
+
+    with open(file.absolute(), 'rb') as f:
+        fb = f.read(BLOCK_SIZE)
+        while len(fb) > 0:
+            result.update(fb)
+            fb = f.read(BLOCK_SIZE)
+
+    return result.hexdigest()
