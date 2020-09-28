@@ -5,7 +5,7 @@ from src.helpers import *
 from src.hashing import *
 from src.Drive import Drive
 
-def extract(main_menu):
+def download_and_extract(main_menu):
     print("")
     log("loading projects from cloud..")
 

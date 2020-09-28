@@ -1,8 +1,9 @@
 from src.helpers import *
-from src.menus.extract import extract
-from src.menus.compress import compress
+from src.menus.download_and_extract import download_and_extract
+from src.menus.compress_and_upload import compress_and_upload
 from src.menus.exit_program import exit_program
 from src.menus.update_program import update_program
+from src.menus.create_new_project import create_new_project
 
 
 ## MAIN MENU
@@ -17,10 +18,11 @@ def main_menu():
     display_title("What would you like to do?")
 
     menu_items = [
-        ["Extract Project",  extract],
-        ["Compress Project", compress],
-        ["Update",           update_program],
-        ["Exit",             exit_program],
+        ["Download & Extract Project", download_and_extract],
+        ["Compress & Upload Project",  compress_and_upload],
+        ["New Project",                create_new_project],
+        ["Update LOFSongManager",      update_program],
+        ["Exit",                       exit_program],
     ]
     ans = list_options(menu_items)
     menu_items[ans][1](main_menu)

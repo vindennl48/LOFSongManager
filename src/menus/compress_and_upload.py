@@ -4,7 +4,7 @@ from src.helpers import *
 from src.Drive import Drive
 from src.hashing import *
 
-def compress(main_menu):
+def compress_and_upload(main_menu):
     # Get extracted project names and list them
     drive          = Drive()
     drive_projects = drive.ls(path='Land of Fires/Audio/LOFSongManager')
