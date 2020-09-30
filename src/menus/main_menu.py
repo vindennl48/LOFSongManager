@@ -4,6 +4,7 @@ from src.menus.compress_and_upload import compress_and_upload
 from src.menus.exit_program import exit_program
 from src.menus.update_program import update_program
 from src.menus.create_new_project import create_new_project
+from src.menus.open_project import open_project
 
 
 ## MAIN MENU
@@ -18,6 +19,7 @@ def main_menu():
     display_title("What would you like to do?")
 
     menu_items = [
+        ["Open Project",               open_project],
         ["Download & Extract Project", download_and_extract],
         ["Compress & Upload Project",  compress_and_upload],
         ["New Project",                create_new_project],
