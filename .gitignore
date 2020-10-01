@@ -6,3 +6,4 @@ ffmpeg
 PortableGit
 credentials.json
 token.pickle
+test.py

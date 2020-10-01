@@ -131,8 +131,20 @@ def download_and_extract(main_menu):
                 recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.stem}_original.song")
         elif path.name == "Media":
             if not has_conflicts:
+                # save dummy.json
+                dummy = Path(f"{project}/Media/dummy.json")
+                db    = {}
+                if dummy.exists():
+                    with open(dummy.absolute(), 'r') as f:
+                        db = json.load(f)
+
                 # remove audio files in media folder
                 clear_folder(f"{project}/Media")
+
+                # if the db store doesnt exist
+                if dummy.exists():
+                    with open(dummy.absolute(), 'w') as f:
+                        json.dump(db, f)
 
             mp3_to_wav(f"{temp_project}/Media", f"{project}/Media")
         elif path.name == "Bounces":
@@ -146,5 +158,8 @@ def download_and_extract(main_menu):
 
     # Clean up after ourselves
     clear_temp()
+
+    # Create dummy media files
+    create_dummy_files(project)
 
     pause()

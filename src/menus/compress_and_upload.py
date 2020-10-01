@@ -89,6 +89,8 @@ def compress_and_upload(main_menu):
 
         local_conflict.unlink()
 
+    remove_dummy_files(project)
+
     # Copy or convert files to temp dir
     for path in glob(f"{project}/*"):
         path = Path(path)
@@ -111,6 +113,8 @@ def compress_and_upload(main_menu):
             # We don't need to compress the autosave files.
             # We also don't need to save the autosave history but we can do that later,
             #  The filesize isnt that expensive.
+
+    create_dummy_files(project)
 
     tar_file(temp_project, comp_project)
 

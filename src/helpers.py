@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import shutil
 import filecmp
 from glob import glob
@@ -204,3 +206,87 @@ def get_files(directory, extension):
     files = glob(f"{directory.absolute()}/*.{extension}")
     files = [ Path(x) for x in files ]
     return files
+
+def split_file_name(file):
+    # This splits a filename 'Mitch(23).wav' into
+    # [ "Mitch", 23 ] or 'Mitch(REC)(26).wav' into
+    # [ "Mitch(REC)", 26 ]
+    file, ext  = file.split(".")
+    file_array = file.split("(")
+    num        = re.findall(r"(\d+)\)", file_array[-1])
+    num        = int(num[0]) if len(num) > 0 else 0
+    file_stem  = ""
+
+    if num > 0:
+        file_array.pop()
+    file_stem = "(".join(file_array)
+
+    return [ file_stem, num, ext ]
+
+def create_dummy_files(project_dir):
+    log("Creating dummy .wav files..")
+    project_dir = Path(project_dir)
+    project_dir = project_dir / "Media"
+    dummy       = project_dir / "dummy.json"
+    db          = {'max': {}, 'dummy': []}
+
+    unprocessed_files = glob(f"{project_dir.absolute()}/*.wav")
+    unprocessed_files = [ Path(x).name for x in unprocessed_files ]
+
+    # if the db store doesnt exist
+    if not dummy.exists():
+        log("Creating dummy.json file..")
+        with open(dummy.absolute(), 'w') as f:
+            json.dump(db, f)
+
+    # get db store from json
+    with open(dummy.absolute()) as f:
+        db = json.load(f)
+
+    for file in unprocessed_files:
+        file_stem, num, ext = split_file_name(file)
+
+        if not file_stem in db['max']:
+            db['max'][file_stem] = num
+        else:
+            if num > db['max'][file_stem]:
+                db['max'][file_stem] = num
+
+    for file_stem in db['max']:
+        num = db['max'][file_stem]
+
+        for i in range(num):
+            if i == 0:
+                path = Path(f"{project_dir}/{file_stem}.{ext}")
+            else:
+                path = Path(f"{project_dir}/{file_stem}({i}).{ext}")
+
+            if not path.exists():
+                path.touch()
+                db.append(path.name)
+
+    with open(dummy.absolute(), 'w') as f:
+        json.dump(db, f)
+
+    log("Created dummy files!")
+
+def remove_dummy_files(project_dir):
+    log("Removing dummy .wav files..")
+    project_dir = Path(project_dir)
+    project_dir = project_dir / "Media"
+    dummy       = project_dir / "dummy.json"
+    db          = []
+
+    if not dummy.exists():
+        raise Exception("'dummy.json' doesn't exist! Contact your administrator..")
+
+    # get db store from json
+    with open(dummy.absolute()) as f:
+        db = json.load(f)
+
+    for file in db:
+        file = Path(f"{project_dir}/{file}")
+        if file.stat().st_size == 0:
+            file.unlink()
+
+    log("Removed dummy files!")
