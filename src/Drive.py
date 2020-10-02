@@ -44,6 +44,10 @@ class Drive:
     def ls(self, path=None, search=None, trashed=False):
         if not path and not search:
             raise Exception("Drive.ls():  Need to provide a search query!")
+        path = None
+
+        if len(search.split('/')) > 1:
+            path = search
 
         if path:
             path_list = path.split('/')
@@ -70,14 +74,13 @@ class Drive:
         for result in results:
             print(f"{leader}Name: '{result['name']}' | Id: '{result['id']}'")
 
-    def get_info(self, id=None, path=None, trashed=False):
-        if id:
-            result = self.ls(search=id)
-            if not result:
-                return False
-            return result
+    def get_info(self, search=None, trashed=False):
+        path = None
 
-        elif path:
+        if len(search.split('/')) > 1:
+            path = search
+
+        if path:
             path_list = path.split('/')
 
             parent = None
@@ -90,6 +93,12 @@ class Drive:
                     # raise Exception(f"Path: '{path}' doesn't exist!")
                 parent = result['id']
 
+            return result
+
+        elif search:
+            result = self.ls(search=id)
+            if not result:
+                return False
             return result
 
         else:
@@ -197,20 +206,3 @@ class Drive:
 
             return True
         return False
-
-
-# from src.helpers import *
-
-# if __name__ == "__main__":
-    # drive = Drive()
-
-    # compare_hash(drive, 'Pemi.lof')
-
-    # # items = drive.ls(id='1DEMYiL1aiRJYjf_B3QyKkUbow4xqNaJQ')
-    # parent = drive.get_info(path='Land of Fires/Audio/LOFSongManager')
-
-    # drive.upload_progress(
-        # file     = './compressed_songs/Pemi.lof',
-        # mimeType = Drive.mimeType['zip'],
-        # parents  = [parent['id']]
-    # )

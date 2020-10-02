@@ -4,6 +4,7 @@ from pathlib import Path
 from src.helpers import *
 from src.hashing import *
 from src.Drive import Drive
+from src.env import LOFSM_DIR_HASH
 
 def download_and_extract(main_menu):
     print("")
@@ -11,7 +12,7 @@ def download_and_extract(main_menu):
 
     # Get extracted project names and list them
     drive          = Drive()
-    drive_projects = drive.ls(path='Land of Fires/Audio/LOFSongManager')
+    drive_projects = drive.ls(search=LOFSM_DIR_HASH)
 
     clear_screen()
     display_title("What project would you like to download and extract?")

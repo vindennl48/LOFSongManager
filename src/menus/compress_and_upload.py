@@ -3,11 +3,12 @@ from pathlib import Path
 from src.helpers import *
 from src.Drive import Drive
 from src.hashing import *
+from src.env import LOFSM_DIR_HASH
 
 def compress_and_upload(main_menu):
     # Get extracted project names and list them
     drive          = Drive()
-    drive_projects = drive.ls(path='Land of Fires/Audio/LOFSongManager')
+    drive_projects = drive.ls(search=LOFSM_DIR_HASH)
 
     clear_screen()
     display_title("What project would you like to compress?")
@@ -119,7 +120,7 @@ def compress_and_upload(main_menu):
     tar_file(temp_project, comp_project)
 
     log(f"Uploading '{comp_project.name}' to the cloud..\n      Please be patient..")
-    parent = drive.get_info(path='Land of Fires/Audio/LOFSongManager')
+    parent = drive.get_info(search=LOFSM_DIR_HASH)
     drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[parent['id']])
 
     set_local_hash_from_file(comp_project.name, comp_project.absolute())

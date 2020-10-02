@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from src.helpers import *
 from src.Drive import Drive
+from src.env import LOFSM_DIR_HASH
 
 def hash_file(file):
     file       = Path(file)
@@ -56,18 +57,14 @@ def check_local_db(key):
     return False
 
 def get_remote_db_raw(drive):
-    try:
-        return drive.get_info(path='Land of Fires/Audio/LOFSongManager/db.json')
-    except Exception as e:
-        print(f"Error: {e}")
-        raise Exception("\n\n## An error has occurred while downloading db.json.. ##\n")
+    return drive.get_info(search=LOFSM_DIR_HASH)
 
 def get_remote_db(drive):
     temp_db      = {}
     temp_db_path = Path('temp/db.json')
 
     try:
-        remote_db = drive.get_info(path='Land of Fires/Audio/LOFSongManager/db.json')
+        remote_db = drive.get_info(search=LOFSM_DIR_HASH)
     except Exception as e:
         print(f"Error: {e}")
         raise Exception("\n\n## An error has occurred while downloading db.json.. ##\n")
