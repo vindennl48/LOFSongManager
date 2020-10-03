@@ -67,9 +67,9 @@ def compress_and_upload(main_menu):
     if local_conflict.exists():
         log("Warning: You still have existing conflicts!!")
         print("")
-        print(f':: Project file "{local_conflict}" still exists.')
+        print(f':: Project file "{local_conflict.name}" still exists.')
         print(f'   This gets created when there are conflicts between your local project')
-        print(f'   and an updated project downloaded from the drive.  If these conflicts')
+        print(f'   and an updated project downloaded from the cloud.  If these conflicts')
         print(f'   do not get resolved before you compress and upload, you will lose all')
         print(f'   your local changes!')
         print("")
@@ -107,6 +107,20 @@ def compress_and_upload(main_menu):
             return 0
 
         local_conflict.unlink()
+
+    clear_screen()
+    print("")
+    print(f":: Remove Unused files from pool")
+    print("")
+    print(f"   Studio One will open and allow you to")
+    print(f"   'Remove Unused Files...' from the audio pool.")
+    print("")
+    print(f"   DO NOT FORGET to check the box that says to")
+    print(f"   'Delete Files permanently'")
+    print("")
+    pause()
+
+    open_SO_projects(local_version.absolute())
 
     remove_dummy_files(project)
 
