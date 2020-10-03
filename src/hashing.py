@@ -4,6 +4,7 @@ from pathlib import Path
 from src.helpers import *
 from src.Drive import Drive
 from src.env import LOFSM_DIR_HASH
+from src.env import LOFSM_DIR_PATH
 
 def hash_file(file):
     file       = Path(file)
@@ -64,7 +65,7 @@ def get_remote_db(drive):
     temp_db_path = Path('temp/db.json')
 
     try:
-        remote_db = drive.get_info(search=LOFSM_DIR_HASH)
+        remote_db = drive.get_info(search=f"{LOFSM_DIR_PATH}/db.json")
     except Exception as e:
         print(f"Error: {e}")
         raise Exception("\n\n## An error has occurred while downloading db.json.. ##\n")

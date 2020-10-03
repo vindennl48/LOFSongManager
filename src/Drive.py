@@ -46,8 +46,11 @@ class Drive:
             raise Exception("Drive.ls():  Need to provide a search query!")
         path = None
 
-        if len(search.split('/')) > 1:
-            path = search
+        try:
+            if len(search.split('/')) > 1:
+                path = search
+        except:
+            pass
 
         if path:
             path_list = path.split('/')
@@ -77,8 +80,11 @@ class Drive:
     def get_info(self, search=None, trashed=False):
         path = None
 
-        if len(search.split('/')) > 1:
-            path = search
+        try:
+            if len(search.split('/')) > 1:
+                path = search
+        except:
+            pass
 
         if path:
             path_list = path.split('/')

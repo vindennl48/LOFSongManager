@@ -75,18 +75,36 @@ def compress_and_upload(main_menu):
         print("")
         print(f'   If you have ALREADY resolved these conflicts, then type "yes"')
         print("")
-        print(f'   If you have NOT yet resolved these conflicts, then type "no"')
+        print(f'   If you have NOT yet resolved these conflicts, and you want to resolve them now,')
+        print(f'   then type "resolve"')
         print("")
-        if input("   (yes/no): ") == "yes":
-            print(":: Are you definitely sure you want to erase your conflict file?")
-            if input("   (yes/no): ") != "yes":
-                log("Exiting...")
-                pause()
-                exit()
+        print(f'   If you have NOT yet resolved these conflicts, but do NOT want to resolve')
+        print(f'   them now, then type "no"')
+        print("")
+        ans = input("   (yes/resolve/no): ")
+
+        if ans == "yes":
+            print("")
+            print(f':: Are you definitely sure you want to erase your conflict file?')
+            print("")
+            ans = input("   (yes/no): ")
+
+            if ans == "yes":
+                pass
+            elif ans == "no":
+                return 0
+            else:
+                log("Not a valid response, please try again!")
+                return 0
+
+        elif ans == "resolve":
+            open_SO_projects(local_version.absolute(), local_conflict.absolute())
+            return 0
+        elif ans == "no":
+            return 0
         else:
-            log("Exiting...")
-            pause()
-            exit()
+            log("Not a valid response, please try again!")
+            return 0
 
         local_conflict.unlink()
 

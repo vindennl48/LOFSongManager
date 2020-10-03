@@ -6,12 +6,10 @@ def open_project(main_menu):
     clear_screen()
     display_title("What project would you like to open?")
 
-    projects            = get_folders("extracted_songs")
-    project             = projects[ list_options([ x.name for x in projects ], back=main_menu) ]
-    local_version       = Path(f"extracted_songs/{project.name}/{project.name}.song")
-    local_conflict      = Path(f"extracted_songs/{project.name}/{project.name}_yourversion.song")
-    local_version_temp  = Path(f"extracted_songs/{project.name}/{project.name}_temp.song")
-    local_conflict_temp = Path(f"extracted_songs/{project.name}/{project.name}_yourversion_temp.song")
+    projects       = get_folders("extracted_songs")
+    project        = projects[ list_options([ x.name for x in projects ], back=main_menu) ]
+    local_version  = Path(f"{project.absolute()}/{project.name}.song")
+    local_conflict = Path(f"{project.absolute()}/{project.name}_yourversion.song")
 
     if local_conflict.exists():
         print("")
@@ -31,35 +29,15 @@ def open_project(main_menu):
 
         if ans == '1':
             log("Opening both projects..")
-
-            recursive_overwrite(local_version.absolute(), local_version_temp.absolute())
-            os.system(f'open {local_version_temp.absolute()}')
-
-            time.sleep(2)
-
-            recursive_overwrite(local_conflict.absolute(), local_conflict_temp.absolute())
-            os.system(f'open -W {local_conflict_temp.absolute()}')
-
-            recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
-            recursive_overwrite(local_conflict_temp.absolute(), local_conflict.absolute())
-            local_version_temp.unlink()
-            local_conflict_temp.unlink()
+            open_SO_projects(local_version.absolute(), local_conflict.absolute())
 
         elif ans == '2':
             log("Opening your last saved version..")
-
-            recursive_overwrite(local_conflict.absolute(), local_conflict_temp.absolute())
-            os.system(f'open -W {local_conflict_temp.absolute()}')
-            recursive_overwrite(local_conflict_temp.absolute(), local_conflict.absolute())
-            local_conflict_temp.unlink()
+            open_SO_projects(local_conflict.absolute())
 
         elif ans == '3':
             log("Opening the most recent version from the cloud")
-
-            recursive_overwrite(local_version.absolute(), local_version_temp.absolute())
-            os.system(f'open -W {local_version_temp.absolute()}')
-            recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
-            local_version_temp.unlink()
+            open_SO_projects(local_version.absolute())
 
         elif ans == 'b':
             return open_project(main_menu)
@@ -70,10 +48,6 @@ def open_project(main_menu):
             return open_project(main_menu)
     else:
         log("Opening project")
-
-        recursive_overwrite(local_version.absolute(), local_version_temp.absolute())
-        os.system(f'open -W {local_version_temp.absolute()}')
-        recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
-        local_version_temp.unlink()
+        open_SO_projects(local_version.absolute())
 
     pause()

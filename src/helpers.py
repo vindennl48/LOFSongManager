@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import json
 import shutil
 import filecmp
@@ -290,3 +291,28 @@ def remove_dummy_files(project_dir):
             file.unlink()
 
     log("Removed dummy files!")
+
+def open_SO_projects(*args):
+    for i, project in enumerate(args, 1):
+        project            = Path(project)
+        local_version      = Path(f"{project.parent}/{project.stem}.song")
+        local_version_temp = Path(f"{project.parent}/{project.stem}_temp.song")
+
+        recursive_overwrite(local_version.absolute(), local_version_temp.absolute())
+
+        if i == len(args):
+            os.system(f'open -W {local_version_temp.absolute()}')
+        else:
+            os.system(f'open {local_version_temp.absolute()}')
+
+            if len(args) > 1:
+                log("Wait between projects..")
+                time.sleep(2)
+
+    for project in args:
+        project            = Path(project)
+        local_version      = Path(f"{project.parent}/{project.stem}.song")
+        local_version_temp = Path(f"{project.parent}/{project.stem}_temp.song")
+
+        recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
+        local_version_temp.unlink()
