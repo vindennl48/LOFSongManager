@@ -303,6 +303,21 @@ def remove_dummy_files(project_dir):
 
     log("Removed dummy files!")
 
+def open_project(file, wait=False):
+    file = Path(file)
+    prg  = "open"
+    flag = "-W"
+
+    if os.name == 'nt':
+        prg  = "start"
+        flag = "/wait"
+
+    if not wait:
+        flag = ""
+
+    os.system(f'{prg} {flag} {file.absolute()}')
+
+
 def open_SO_projects(*args):
     for i, project in enumerate(args, 1):
         project            = Path(project)
@@ -312,9 +327,9 @@ def open_SO_projects(*args):
         recursive_overwrite(local_version.absolute(), local_version_temp.absolute())
 
         if i == len(args):
-            os.system(f'open -W {local_version_temp.absolute()}')
+            open_project(local_version_temp.absolute(), wait=True)
         else:
-            os.system(f'open {local_version_temp.absolute()}')
+            open_project(local_version_temp.absolute())
 
             if len(args) > 1:
                 log("Wait between projects..")
