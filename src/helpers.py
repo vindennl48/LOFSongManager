@@ -9,7 +9,7 @@ from pathlib import Path
 
 ## HELPERS
 def log(text):
-    print("----> ", text)
+    print("---->", text)
 
 def clear_screen():
     if os.name == 'nt':
