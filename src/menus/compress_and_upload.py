@@ -163,5 +163,5 @@ def compress_and_upload(main_menu):
     # Clean up after ourselves
     clear_temp()
 
-    log("Compression Complete!")
+    log("Compression and upload complete!")
     pause()

@@ -31,6 +31,7 @@ def download_and_extract(main_menu):
     if not compare_hash(drive, comp_project.name):
         # We need to download the newest version
         log("Downloading new version")
+        print("      Please be patient..")
         if not drive.download(drive_project['id'], comp_project.absolute()):
             raise Exception('\n\n## Check your internet connection and try again! ##\n## Error when downloading project ##')
         else:

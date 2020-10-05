@@ -315,7 +315,12 @@ def open_project(file, wait=False):
     if not wait:
         flag = ""
 
+    log("Waiting for Studio One to close..")
+    print("\n\n      DO NOT CLOSE THIS WINDOW! \n\n")
+
     os.system(f'{prg} {flag} {file.absolute()}')
+
+    log("Studio One has closed")
 
 
 def open_SO_projects(*args):
