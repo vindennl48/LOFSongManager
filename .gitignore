@@ -7,3 +7,4 @@ PortableGit
 credentials.json
 token.pickle
 test.py
+__pycache__
