@@ -58,7 +58,7 @@ def check_local_db(key):
     return False
 
 def get_remote_db_raw(drive):
-    return drive.get_info(search=LOFSM_DIR_HASH)
+    return drive.get_info(search=f'{LOFSM_DIR_PATH}/db.json')
 
 def get_remote_db(drive):
     temp_db      = {}
@@ -66,6 +66,8 @@ def get_remote_db(drive):
 
     try:
         remote_db = drive.get_info(search=f"{LOFSM_DIR_PATH}/db.json")
+        if not remote_db:
+            raise Exception('No File Exists! "db.json"')
     except Exception as e:
         print(f"Error: {e}")
         raise Exception("\n\n## An error has occurred while downloading db.json.. ##\n")
@@ -120,15 +122,20 @@ def compare_hash(drive, name):
     return False
 
 def set_local_hash_from_file(name, path):
+    log("Setting local hash from file")
     path = Path(path)
     hf   = hash_file(path.absolute())
     set_local_db(name, hf)
+    log("Finished setting hash!")
 
 def set_local_hash_from_remote(drive, name):
+    log("Setting local hash from remote")
     remote_db = get_remote_db(drive)
     set_local_db(name, remote_db[name])
+    log("Finished setting local hash!")
 
 def set_remote_hash_from_local(drive, name):
+    log("Setting remote hash from local")
     db = get_local_db()
     if name in db:
         set_remote_db(drive, name, db[name])

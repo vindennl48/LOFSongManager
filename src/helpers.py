@@ -49,19 +49,23 @@ def ffmpeg(args, source, destination, codec=""):
     command_string = ""
 
     if os.name == 'nt':
-        command = [
-            args,
-            source,
-            codec,
-            destination,
-        ]
         ffmpeg_path = Path("src/ffmpeg/bin/ffmpeg.exe")
-        command_string = f'"{ffmpeg_path.absolute()}" {" ".join(command)}'
+
+        command = [
+            f'"{ffmpeg_path.absolute()}"',
+            f'{args}',
+            f'{source}',
+            f'{codec}',
+            f'{destination}',
+        ]
+
+        command_string = " ".join(command)
+
     else:
         command = [
-            args,
+            f'{args}',
             f'"{source}"',
-            codec,
+            f'{codec}',
             f'"{destination}"',
         ]
         command_string = f'ffmpeg {" ".join(command)}'
@@ -81,7 +85,7 @@ def mp3_to_wav(directory, destination):
         if not wav.is_file():
             ffmpeg("-i", mp3.absolute(), wav.absolute(), "-c:a pcm_s24le")
         else:
-            log(f'Keeping file "{wav.name}"')
+            log(f'Keeping file "{wav}"')
 
 def wav_to_mp3(directory, destination):
     # Directory is where the mp3's are stored
@@ -96,7 +100,7 @@ def wav_to_mp3(directory, destination):
         if not mp3.is_file():
             ffmpeg("-i", wav.absolute(), mp3.absolute())
         else:
-            log(f'Keeping file "{mp3.name}"')
+            log(f'Keeping file "{mp3}"')
 
 def mkdir(path):
     path = Path(path)
@@ -264,7 +268,7 @@ def create_dummy_files(project_dir):
 
             if not path.exists():
                 path.touch()
-                db.append(path.name)
+                db['dummy'].append(path.name)
 
     with open(dummy.absolute(), 'w') as f:
         json.dump(db, f)
@@ -276,7 +280,7 @@ def remove_dummy_files(project_dir):
     project_dir = Path(project_dir)
     project_dir = project_dir / "Media"
     dummy       = project_dir / "dummy.json"
-    db          = []
+    db          = {'max': {}, 'dummy': []}
 
     if not dummy.exists():
         raise Exception("'dummy.json' doesn't exist! Contact your administrator..")
@@ -285,10 +289,17 @@ def remove_dummy_files(project_dir):
     with open(dummy.absolute()) as f:
         db = json.load(f)
 
-    for file in db:
+    for file in db['dummy']:
         file = Path(f"{project_dir}/{file}")
         if file.stat().st_size == 0:
             file.unlink()
+
+    # clean out dummy file list
+    db['dummy'] = []
+
+    # save new dummy.json
+    with open(dummy.absolute(), 'w') as f:
+        json.dump(db, f)
 
     log("Removed dummy files!")
 

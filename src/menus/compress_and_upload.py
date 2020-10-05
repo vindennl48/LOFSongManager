@@ -152,11 +152,13 @@ def compress_and_upload(main_menu):
     tar_file(temp_project, comp_project)
 
     log(f"Uploading '{comp_project.name}' to the cloud..\n      Please be patient..")
-    parent = drive.get_info(search=LOFSM_DIR_HASH)
-    drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[parent['id']])
+    drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[LOFSM_DIR_HASH])
 
+    log("Setting local hash")
     set_local_hash_from_file(comp_project.name, comp_project.absolute())
+    log("Setting remote hash")
     set_remote_hash_from_local(drive, comp_project.name)
+    log("Finished Setting hashes")
 
     # Clean up after ourselves
     clear_temp()
