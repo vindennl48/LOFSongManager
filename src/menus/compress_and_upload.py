@@ -135,9 +135,17 @@ def compress_and_upload(main_menu):
                 recursive_overwrite(local_version.absolute(), download_version.absolute())
                 recursive_overwrite(local_version.absolute(), local_original.absolute())
         elif path.name == "Media":
-            wav_to_mp3(f"{project}/Media", f"{temp_project}/Media")
+            ans = wav_to_mp3(f"{project}/Media", f"{temp_project}/Media")
+            if ans == 4:
+                log("Exiting..")
+                create_dummy_files(project)
+                exit()
         elif path.name == "Bounces":
-            wav_to_mp3(f"{project}/Bounces", f"{temp_project}/Bounces")
+            ans = wav_to_mp3(f"{project}/Bounces", f"{temp_project}/Bounces")
+            if ans == 4:
+                log("Exiting..")
+                create_dummy_files(project)
+                exit()
         elif path.name != "Cache" and path.suffix != ".autosave":
             recursive_overwrite(path.absolute(), f"{temp_project.absolute()}/{path.name}")
         else:

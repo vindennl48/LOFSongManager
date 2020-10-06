@@ -92,12 +92,51 @@ def wav_to_mp3(directory, destination):
     # Destination is where you want the wav's to be saved
     directory   = Path(directory)
     destination = Path(destination)
+    name        = get_username()
 
     mkdir(destination)
+
     for wav in glob(f"{directory}/*.wav"):
         wav = Path(wav)
         mp3 = Path(f"{destination}/{wav.stem}.mp3")
+
+        name_ignore = False
+
         if not mp3.is_file():
+            if not name in wav.stem and not name_ignore:
+                print(f'')
+                print(f':: Warning!')
+                print(f'')
+                print(f'   It appears that the file')
+                print(f'')
+                print(f'     "{wav.name}"')
+                print(f'')
+                print(f'   does not contain your name.. Are you sure you')
+                print(f'   recorded on the correct track??  Doing this can')
+                print(f'   cause serious version control issues!!')
+                print(f'')
+                print(f'   Since you have already removed unused audio files')
+                print(f'   and selected the checkbox to delete them from the')
+                print(f'   hard drive..  You should go back into your Studio')
+                print(f'   One project and remove these clips from the time-')
+                print(f'   line.  Then re-run the upload.')
+                print(f'')
+                print(f'   If you are ABSOLUTELY SURE that this is in error,')
+                print(f'   aka, uploading a project from band practice,')
+                print(f'   then type "yes" at the prompt.')
+                print(f'')
+                print(f'   If you want to exit now, type "no" at the prompt.')
+                print(f'')
+
+                ans = input("(yes/no): ")
+                if ans == "no":
+                    return 4
+                elif ans == "yes":
+                    name_ignore = True
+                else:
+                    print(f'Not a valid response.. Please try again!')
+                    wav_to_mp3(directory, destination)
+
             ffmpeg("-i", wav.absolute(), mp3.absolute())
         else:
             log(f'Keeping file "{mp3}"')
@@ -348,7 +387,7 @@ def open_SO_projects(*args):
         recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
         local_version_temp.unlink()
 
-def check_settings():
+def create_settings():
     # if settings dont exist
     settings_file = Path('.settings')
     settings      = {}
@@ -372,3 +411,15 @@ def check_settings():
 
         with open(settings_file.absolute(), 'w') as f:
             json.dump(settings, f)
+
+def get_username():
+    settings_file = Path('.settings')
+    settings      = {}
+
+    if not settings_file.exists():
+        create_settings()
+
+    with open(settings_file.absolute()) as f:
+        settings = json.load(f)
+
+    return settings['user']
