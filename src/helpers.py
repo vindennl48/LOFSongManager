@@ -123,15 +123,18 @@ def wav_to_mp3(directory, destination):
                 print(f'')
                 print(f'   If you are ABSOLUTELY SURE that this is in error,')
                 print(f'   aka, uploading a project from band practice,')
-                print(f'   then type "yes" at the prompt.')
+                print(f'   then type "yes" at the prompt or yesall to ignore')
+                print(f'   all other warnings in this upload.')
                 print(f'')
                 print(f'   If you want to exit now, type "no" at the prompt.')
                 print(f'')
 
-                ans = input("(yes/no): ")
+                ans = input("(yes/yesall/no): ")
                 if ans == "no":
                     return 4
                 elif ans == "yes":
+                    pass
+                elif ans == "yesall":
                     name_ignore = True
                 else:
                     print(f'Not a valid response.. Please try again!')
