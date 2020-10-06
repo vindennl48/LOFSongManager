@@ -8,3 +8,4 @@ credentials.json
 token.pickle
 test.py
 __pycache__
+.settings

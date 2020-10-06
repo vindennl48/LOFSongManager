@@ -347,3 +347,28 @@ def open_SO_projects(*args):
 
         recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
         local_version_temp.unlink()
+
+def check_settings():
+    # if settings dont exist
+    settings_file = Path('.settings')
+    settings      = {}
+
+    if not settings_file.exists():
+        print(':: Welcome!')
+        print('')
+        print('   Since this is your first time using this software, we')
+        print('   need to know your name to get things working smoothly!')
+        print('')
+        print('   What is your first name?')
+        print('')
+
+        name = input("Name: ").lower()
+
+        print('\n   Thanks!!\n')
+
+        pause()
+
+        settings['user'] = name
+
+        with open(settings_file.absolute(), 'w') as f:
+            json.dump(settings, f)

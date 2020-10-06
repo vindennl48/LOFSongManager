@@ -16,6 +16,9 @@ def main_menu():
     mkdir("templates")
 
     clear_screen()
+    check_settings()
+    clear_screen()
+
     display_title("What would you like to do?")
 
     menu_items = [
