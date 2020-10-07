@@ -72,11 +72,14 @@ def ffmpeg(args, source, destination, codec=""):
 
     os.system(command_string)
 
-def mp3_to_wav(directory, destination):
+def mp3_to_wav(directory, destination, dummy=None):
     # Directory is where the mp3's are stored
     # Destination is where you want the wav's to be saved
     directory   = Path(directory)
     destination = Path(destination)
+
+    if not dummy:
+        dummy = get_dummy_data(destination.absolute())
 
     mkdir(destination)
     for mp3 in glob(f"{directory}/*.mp3"):
@@ -85,7 +88,32 @@ def mp3_to_wav(directory, destination):
         if not wav.is_file():
             ffmpeg("-i", mp3.absolute(), wav.absolute(), "-c:a pcm_s24le")
         else:
-            log(f'Keeping file "{wav}"')
+            file_stem, num, ext = split_file_name(wav.name)
+            if file_stem in dummy['max'] and num > dummy['max'][file_stem]:
+                # We have an audio file conflict!
+                # We are going to keep the newest version and rename
+                # the other to *_old.wav
+                print(f'')
+                print(f':: Warning! Audio File Conflict Found!')
+                print(f'')
+                print(f'   Because the audio file "{wav.name}" exists in your local project')
+                print(f'   as well as the cloud project you are trying to download.. We need')
+                print(f'   to figure out which one to keep!')
+                print(f'')
+                print(f'   This software will take the current local version of "{wav.name}" and')
+                print(f'   rename it to "{wav.stem}_old.wav".  Then copy the new audio file into')
+                print(f'   the pool.  You will have to go into the project and figure out which')
+                print(f'   audio file is the correct one!')
+                print(f'')
+                print(f'   Chances are you have accidentally recorded to the wrong track and this')
+                print(f'   warning can be ignored.')
+                print(f'')
+                pause()
+                recursive_overwrite(wav.absolute(), f'{wav.parent}/{wav.stem}_old.wav')
+                wav.unlink()
+                ffmpeg("-i", mp3.absolute(), wav.absolute(), "-c:a pcm_s24le")
+            else:
+                log(f'Keeping file "{wav}"')
 
 def wav_to_mp3(directory, destination):
     # Directory is where the mp3's are stored
@@ -270,6 +298,25 @@ def split_file_name(file):
 
     return [ file_stem, num, ext ]
 
+def get_dummy_data(project_dir):
+    log("Getting dummy data")
+    project_dir = Path(project_dir)
+    dummy       = project_dir / "dummy.json"
+    db          = {'max': {}, 'dummy': []}
+
+    if dummy.parent.exists():
+        # if the db store doesnt exist
+        if not dummy.exists():
+            log("Creating dummy.json file..")
+            with open(dummy.absolute(), 'w') as f:
+                json.dump(db, f)
+
+        # get db store from json
+        with open(dummy.absolute()) as f:
+            db = json.load(f)
+
+    return db
+
 def create_dummy_files(project_dir):
     log("Creating dummy .wav files..")
     project_dir = Path(project_dir)
@@ -356,13 +403,14 @@ def open_project(file, wait=False):
 
     if not wait:
         flag = ""
-
-    log("Waiting for Studio One to close..")
-    print("\n\n      DO NOT CLOSE THIS WINDOW! \n\n")
+    else:
+        log("Waiting for Studio One to close..")
+        print("\n\n      DO NOT CLOSE THIS WINDOW! \n\n")
 
     os.system(f'{prg} {flag} {file.absolute()}')
 
-    log("Studio One has closed")
+    if wait:
+        log("Studio One has closed")
 
 
 def open_SO_projects(*args):
@@ -379,8 +427,8 @@ def open_SO_projects(*args):
             open_project(local_version_temp.absolute())
 
             if len(args) > 1:
-                log("Wait between projects..")
-                time.sleep(2)
+                log("Wait 10 sec for the next project to open..")
+                time.sleep(10)
 
     for project in args:
         project            = Path(project)

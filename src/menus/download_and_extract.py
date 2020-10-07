@@ -132,11 +132,14 @@ def download_and_extract(main_menu):
                 recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.name}")
                 recursive_overwrite(download_version.absolute(), f"{project.absolute()}/{download_version.stem}_original.song")
         elif path.name == "Media":
+            # save the dummy data
+            dummy = get_dummy_data(f"{project}/Media")
+
             if not has_conflicts:
                 # remove audio files in media folder
                 clear_folder(f"{project}/Media")
 
-            mp3_to_wav(f"{temp_project}/Media", f"{project}/Media")
+            mp3_to_wav(f"{temp_project}/Media", f"{project}/Media", dummy=dummy)
         elif path.name == "Bounces":
             if not has_conflicts:
                 # remove audio files in bounces folder
