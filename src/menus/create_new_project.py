@@ -10,7 +10,7 @@ def create_new_project(main_menu):
     name = None
     while not name:
         log("Please type a name for your new project")
-        name = input(":: Project Name: ")
+        name = input(":: Project Name: ").replace(" ", "_")
 
     template = Path('templates/template_01.song')
     new_song = Path(f'extracted_songs/{name}/{name}.song')
