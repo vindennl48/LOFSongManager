@@ -131,7 +131,7 @@ def wav_to_mp3(directory, destination):
         name_ignore = False
 
         if not mp3.is_file():
-            if not name in wav.stem and not name_ignore:
+            if not name in wav.stem.lower() and not name_ignore:
                 print(f'')
                 print(f':: Warning!')
                 print(f'')
