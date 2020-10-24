@@ -122,14 +122,13 @@ def wav_to_mp3(directory, destination):
     directory   = Path(directory)
     destination = Path(destination)
     name        = get_username()
+    name_ignore = False
 
     mkdir(destination)
 
     for wav in glob(f"{directory}/*.wav"):
         wav = Path(wav)
         mp3 = Path(f"{destination}/{wav.stem}.mp3")
-
-        name_ignore = False
 
         if not mp3.is_file():
             if not name in wav.stem.lower() and not name_ignore:
@@ -138,7 +137,7 @@ def wav_to_mp3(directory, destination):
                 print(f'')
                 print(f'   It appears that the file')
                 print(f'')
-                print(f'     "{wav.name}"')
+                print(f'     "{wav.parent.absolute().name}/{wav.name}"')
                 print(f'')
                 print(f'   does not contain your name.. Are you sure you')
                 print(f'   recorded on the correct track??  Doing this can')
@@ -147,8 +146,9 @@ def wav_to_mp3(directory, destination):
                 print(f'   Since you have already removed unused audio files')
                 print(f'   and selected the checkbox to delete them from the')
                 print(f'   hard drive..  You should go back into your Studio')
-                print(f'   One project and remove these clips from the time-')
-                print(f'   line.  Then re-run the upload.')
+                print(f'   One project, remove these clips from the time-   ')
+                print(f'   line, remove unused audio files, then re-run the ')
+                print(f'   upload.')
                 print(f'')
                 print(f'   If you are ABSOLUTELY SURE that this is in error,')
                 print(f'   aka, uploading a project from band practice,')
@@ -366,15 +366,15 @@ def create_dummy_files(project_dir):
 
     log("Created dummy files!")
 
-def remove_dummy_files(project_dir):
+def remove_dummy_files(project_dir_raw):
     log("Removing dummy .wav files..")
-    project_dir = Path(project_dir)
+    project_dir = Path(project_dir_raw)
     project_dir = project_dir / "Media"
     dummy       = project_dir / "dummy.json"
-    db          = {'max': {}, 'dummy': []}
+    db          = {}
 
     if not dummy.exists():
-        raise Exception("'dummy.json' doesn't exist! Contact your administrator..")
+        create_dummy_files(project_dir_raw)
 
     # get db store from json
     with open(dummy.absolute()) as f:
