@@ -127,11 +127,18 @@ def wav_to_mp3(directory, destination):
     mkdir(destination)
 
     for wav in glob(f"{directory}/*.wav"):
-        wav = Path(wav)
-        mp3 = Path(f"{destination}/{wav.stem}.mp3")
+        wav       = Path(wav)
+        mp3       = Path(f"{destination}/{wav.stem}.mp3")
+        is_old    = False
+        wav_split = wav.stem.split('_')
+
+        # Figure out if the file is *_old.wav
+        if len(wav_split) > 1 and wav_split[-1] == "old":
+            # If it is, we want to ignore the next section
+            is_old = True
 
         if not mp3.is_file():
-            if not name in wav.stem.lower() and not name_ignore:
+            if not name in wav.stem.lower() and not name_ignore and not is_old:
                 print(f'')
                 print(f':: Warning!')
                 print(f'')
