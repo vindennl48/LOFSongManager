@@ -6,6 +6,7 @@ import shutil
 import filecmp
 from glob import glob
 from pathlib import Path
+from src.env import VERSION
 
 ## HELPERS
 def log(text):
@@ -220,6 +221,7 @@ def recursive_overwrite(src, dest, ignore=None):
 def display_title(text):
     print(f"###############################")
     print(f"  LOF Studio One Song Manager  ")
+    print(f"            V{VERSION}         ")
     print(f"###############################")
     print(f":: {text} \n")
 
@@ -443,6 +445,13 @@ def create_settings():
     settings_file = Path('.settings')
     settings      = {}
 
+    if settings_file.exists():
+        with open(settings_file.absolute()) as f:
+            settings = json.load(f)
+
+            if not "version" in settings or settings['version'] != VERSION:
+                settings_file.unlink()
+
     if not settings_file.exists():
         print(':: Welcome!')
         print('')
@@ -458,7 +467,8 @@ def create_settings():
 
         pause()
 
-        settings['user'] = name
+        settings['user']    = name
+        settings['version'] = VERSION
 
         with open(settings_file.absolute(), 'w') as f:
             json.dump(settings, f)
