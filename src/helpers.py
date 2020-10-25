@@ -288,6 +288,12 @@ def git_update():
     else:
         os.system("git pull --rebase")
 
+def pip_install():
+    os.system("pip install -r requirements.txt")
+
+def pip_freeze():
+    os.system("pip freeze > requirements.txt")
+
 def get_folders(directory):
     directory = Path(directory)
     folders = glob(f"{directory.absolute()}/*/")
