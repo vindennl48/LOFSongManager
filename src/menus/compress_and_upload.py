@@ -4,6 +4,7 @@ from src.helpers import *
 from src.Drive import Drive
 from src.hashing import *
 from src.env import LOFSM_DIR_HASH
+from src.slack.notify import Notify as Slack
 
 def compress_and_upload(main_menu):
     # Get extracted project names and list them
@@ -176,6 +177,10 @@ def compress_and_upload(main_menu):
 
     # Clean up after ourselves
     clear_temp()
+
+    # Push a notification to Slack
+    notification = f'{get_nice_username()} uploaded a new version of {project.name}'
+    Slack(notification)
 
     log("Compression and upload complete!")
     pause()
