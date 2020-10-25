@@ -281,6 +281,14 @@ def clear_temp():
         log("Development Mode prevented clear_temp function")
     log("Temp directory cleared!")
 
+def check_for_updates():
+    log("Checking for updates on startup..")
+    perform_update()
+    log("Update Complete!")
+
+def perform_update():
+    git_update() and pip_install()
+
 def git_update():
     if os.name == 'nt':
         git = Path("src/PortableGit/bin/git")
@@ -289,10 +297,16 @@ def git_update():
         os.system("git pull --rebase")
 
 def pip_install():
-    os.system("pip install -r requirements.txt")
+    if os.name == 'nt':
+        os.system('pip install -q -r requirements.txt')
+    else:
+        os.system('pip3 install -q -r requirements.txt')
 
 def pip_freeze():
-    os.system("pip freeze > requirements.txt")
+    if os.name == 'nt':
+        os.system('pip freeze > requirements.txt')
+    else:
+        os.system('pip3 freeze > requirements.txt')
 
 def get_folders(directory):
     directory = Path(directory)
