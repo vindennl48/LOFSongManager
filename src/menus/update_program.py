@@ -8,6 +8,7 @@ def update_program(main_menu):
 
     log("Checking for updates..")
     git_update()
+    pip_install()
     log("Update Complete!")
 
     pause()
