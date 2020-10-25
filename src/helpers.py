@@ -503,3 +503,6 @@ def get_username():
         settings = json.load(f)
 
     return settings['user']
+
+def get_nice_username():
+    return get_username().capitalize()
