@@ -1,4 +1,5 @@
 import os
+import subprocess
 import re
 import time
 import json
@@ -60,12 +61,14 @@ def ffmpeg(args, source, destination, codec=""):
         command = [
             f'"{ffmpeg_path.absolute()}"',
             f'{args}',
-            f'{source}',
+            f'"{source}"',
             f'{codec}',
-            f'{destination}',
+            f'"{destination}"',
         ]
 
         command_string = " ".join(command)
+
+        subprocess.call(command_string)
 
     else:
         command = [
@@ -76,7 +79,7 @@ def ffmpeg(args, source, destination, codec=""):
         ]
         command_string = f'ffmpeg {" ".join(command)}'
 
-    os.system(command_string)
+        os.system(command_string)
 
 def mp3_to_wav(directory, destination, dummy=None):
     # Directory is where the mp3's are stored
