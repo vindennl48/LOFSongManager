@@ -35,6 +35,10 @@ def get_local_db():
     return db
 
 def set_local_db(key, value):
+    if dev("NO_SET_LOCAL_HASH"):
+        log("Development Mode preventing set_local_db function")
+        return 0
+
     db_path = Path(f"compressed_songs/db.json")
     db      = get_local_db()
     db[key] = value
@@ -80,6 +84,10 @@ def get_remote_db(drive):
     return temp_db
 
 def set_remote_db(drive, key, value):
+    if dev("NO_SET_REMOTE_HASH"):
+        log("Development Mode preventing set_remote_db function")
+        return 0
+
     temp_db_path = Path('temp/db.json')
     temp_db      = get_remote_db(drive)
     temp_db[key] = value
@@ -123,22 +131,31 @@ def compare_hash(drive, name):
 
 def set_local_hash_from_file(name, path):
     log("Setting local hash from file")
-    path = Path(path)
-    hf   = hash_file(path.absolute())
-    set_local_db(name, hf)
+    if not dev("NO_SET_HASH"):
+        path = Path(path)
+        hf   = hash_file(path.absolute())
+        set_local_db(name, hf)
+    else:
+        log("Development Mode preventing set_local_hash_from_file function")
     log("Finished setting hash!")
 
 def set_local_hash_from_remote(drive, name):
     log("Setting local hash from remote")
-    remote_db = get_remote_db(drive)
-    set_local_db(name, remote_db[name])
+    if not dev("NO_SET_HASH"):
+        remote_db = get_remote_db(drive)
+        set_local_db(name, remote_db[name])
+    else:
+        log("Development Mode preventing set_local_hash_from_remote function")
     log("Finished setting local hash!")
 
 def set_remote_hash_from_local(drive, name):
     log("Setting remote hash from local")
-    db = get_local_db()
-    if name in db:
-        set_remote_db(drive, name, db[name])
+    if not dev("NO_SET_HASH"):
+        db = get_local_db()
+        if name in db:
+            set_remote_db(drive, name, db[name])
+        else:
+            raise Exception(f"Key 'name' is not in local db.json!")
     else:
-        raise Exception(f"Key 'name' is not in local db.json!")
+        log("Development Mode preventing set_remote_hash_from_local function")
     log("Finished setting remote hash!")

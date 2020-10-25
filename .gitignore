@@ -9,3 +9,4 @@ token.pickle
 test.py
 __pycache__
 .settings
+development.py

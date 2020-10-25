@@ -225,7 +225,25 @@ def recursive_overwrite(src, dest, ignore=None):
 
         shutil.copyfile(src, dest)
 
+def dev(name):
+    try:
+        import development
+
+        if not development.DEVELOPMENT:
+            return False
+
+        if name == "DEVELOPMENT":
+            return development.DEVELOPMENT
+
+        return development.flags[name]
+
+    except:
+        return False
+
 def display_title(text):
+    if dev("DEVELOPMENT"):
+        print(f"::      DEVELOPMENT MODE     ::")
+
     print(f"###############################")
     print(f"  LOF Studio One Song Manager  ")
     print(f"            V{VERSION}         ")
@@ -416,7 +434,10 @@ def open_project(file, wait=False):
         log("Waiting for Studio One to close..")
         print("\n\n      DO NOT CLOSE THIS WINDOW! \n\n")
 
-    os.system(f'{prg} {flag} {file.absolute()}')
+    if not dev("NO_OPEN_STUDIO_ONE"):
+        os.system(f'{prg} {flag} {file.absolute()}')
+    else:
+        log("Development Mode prevented Studio One from opening")
 
     if wait:
         log("Studio One has closed")

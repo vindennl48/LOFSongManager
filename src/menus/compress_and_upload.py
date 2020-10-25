@@ -157,10 +157,18 @@ def compress_and_upload(main_menu):
 
     create_dummy_files(project)
 
-    tar_file(temp_project, comp_project)
+    if not dev("NO_TAR_FILE"):
+        tar_file(temp_project, comp_project)
+    else:
+        log("Development Mode prevented tar of project file")
 
     log(f"Uploading '{comp_project.name}' to the cloud..\n      Please be patient..")
-    drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[LOFSM_DIR_HASH])
+    if not dev("NO_UPLOAD_PROJECT"):
+        log("here")
+        pause()
+        drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[LOFSM_DIR_HASH])
+    else:
+        log("Development Mode prevented upload of project")
 
     log("Setting local hash")
     set_local_hash_from_file(comp_project.name, comp_project.absolute())
