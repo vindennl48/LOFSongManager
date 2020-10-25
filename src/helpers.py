@@ -289,10 +289,16 @@ def git_update():
         os.system("git pull --rebase")
 
 def pip_install():
-    os.system("pip install -r requirements.txt")
+    if os.name == 'nt':
+        os.system("pip install -r requirements.txt")
+    else:
+        os.system("pip3 install -r requirements.txt")
 
 def pip_freeze():
-    os.system("pip freeze > requirements.txt")
+    if os.name == 'nt':
+        os.system("pip freeze > requirements.txt")
+    else:
+        os.system("pip3 freeze > requirements.txt")
 
 def get_folders(directory):
     directory = Path(directory)
