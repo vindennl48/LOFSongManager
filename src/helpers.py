@@ -7,10 +7,15 @@ import filecmp
 from glob import glob
 from pathlib import Path
 from src.env import VERSION
+from src.dev import *
 
 ## HELPERS
 def log(text):
     print("---->", text)
+
+def pause():
+    log("Press Enter to Continue..")
+    input()
 
 def clear_screen():
     if os.name == 'nt':
@@ -224,22 +229,6 @@ def recursive_overwrite(src, dest, ignore=None):
             log(f'Copying new file "{src.name}"')
 
         shutil.copyfile(src, dest)
-
-def dev(name):
-    try:
-        import development
-
-        if not development.DEVELOPMENT:
-            return False
-
-        if name == "DEVELOPMENT":
-            return development.DEVELOPMENT
-
-        return development.flags[name]
-
-    except:
-        return False
-
 def display_title(text):
     if dev("DEVELOPMENT"):
         print(f"::      DEVELOPMENT MODE     ::")
@@ -281,9 +270,12 @@ def clear_folder(path):
     log(f"'{path.name}' directory cleared!")
 
 def clear_temp():
-    log("Clearing out temp directory..")
-    shutil.rmtree("temp")
-    mkdir("temp")
+    if not dev("NO_CLEAR_TEMP"):
+        log("Clearing out temp directory..")
+        shutil.rmtree("temp")
+        mkdir("temp")
+    else:
+        log("Development Mode prevented clear_temp function")
     log("Temp directory cleared!")
 
 def git_update():
@@ -292,10 +284,6 @@ def git_update():
         os.system(f'"{git.absolute()}" pull --rebase')
     else:
         os.system("git pull --rebase")
-
-def pause():
-    log("Press Enter to Continue..")
-    input()
 
 def get_folders(directory):
     directory = Path(directory)

@@ -164,8 +164,6 @@ def compress_and_upload(main_menu):
 
     log(f"Uploading '{comp_project.name}' to the cloud..\n      Please be patient..")
     if not dev("NO_UPLOAD_PROJECT"):
-        log("here")
-        pause()
         drive.update_or_upload(comp_project.absolute(), Drive.mimeType['zip'], parents=[LOFSM_DIR_HASH])
     else:
         log("Development Mode prevented upload of project")
