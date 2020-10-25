@@ -465,8 +465,8 @@ def create_settings():
         with open(settings_file.absolute()) as f:
             settings = json.load(f)
 
-            if not "version" in settings or settings['version'] != VERSION:
-                settings_file.unlink()
+        if not "version" in settings or settings['version'] != VERSION:
+            settings_file.unlink()
 
     if not settings_file.exists():
         print(':: Welcome!')
