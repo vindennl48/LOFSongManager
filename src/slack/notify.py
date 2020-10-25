@@ -1,17 +1,20 @@
 import requests
 import json
+from src.env import *
 
 
 class Notify:
 
-    endpoint = "https://hooks.slack.com/services/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"
     headers = { "Content-Type": "application/json" }
 
     def __init__(self, text):
         data = { "text": text }
 
         requests.post(
-            self.endpoint,
+            self.endpoint(),
             data = json.dumps(data),
             headers = self.headers,
         )
+
+    def endpoint(self):
+        return f'{SLACK_WEBHOOK_BASE}/{SLACK_WEBHOOK_ENDPOINT}'
