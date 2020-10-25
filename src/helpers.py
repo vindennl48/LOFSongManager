@@ -483,6 +483,17 @@ def create_settings():
         if not "version" in settings or settings['version'] != VERSION:
             settings_file.unlink()
 
+            print("\n\n  :: Would you like to remove all local projects and start fresh?\n\n")
+            ans = input("(y/n): ")
+
+            if ans == "y":
+                print("\n\n  :: Are you sure? This can not be undone! \n\n")
+                ans = input("(y/n): ")
+
+                if ans == "y":
+                    clear_folder(Path("extracted_songs"))
+                    clear_folder(Path("compressed_songs"))
+
     if not settings_file.exists():
         print(':: Welcome!')
         print('')
