@@ -97,7 +97,7 @@ class Settings:
 
         print( "\n".join(output) )
 
-        settings["slack_endpoint_prod"] = input('Production endpoint URL: ').lower()
-        settings["slack_endpoint_dev"]  = input('Development endpoint URL: ').lower()
+        settings["slack_endpoint_prod"] = input('Production endpoint URL: ')
+        settings["slack_endpoint_dev"]  = input('Development endpoint URL: ')
 
         Settings.set(settings)
