@@ -30,8 +30,7 @@ def download_and_extract(main_menu):
     download_version = Path(f"{temp_project}/{project.stem}.song")
 
     # Push a notification to Slack
-    notification = f'{Settings.get_user(capitalize=True)} is working on {project.name}'
-    Slack(notification)
+    Slack(f'{Slack.get_nice_username()} is downloading {Slack.make_nice_project_name(project.name)}')
 
     # check hashes
     if not compare_hash(drive, comp_project.name):

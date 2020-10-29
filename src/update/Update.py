@@ -7,6 +7,7 @@ from src.dev import dev
 from src.run.Run import Run
 from src.settings.Settings import Settings
 from src.env import VERSION
+from src.slack.notify import Notify as Slack
 
 class Update:
     def run():
@@ -49,5 +50,8 @@ class Update:
                     result = False
 
                 Settings.set_version(migration_version)
+
+                # Push a notification to Slack
+                Slack(f'{Settings.get_user(capitalize=True)} has upgraded to V{migration_version}!')
 
         return result

@@ -1,6 +1,8 @@
 import os
 import time
 from src.helpers import *
+from src.settings.Settings import Settings
+from src.slack.notify import Notify as Slack
 
 def open_project(main_menu):
     clear_screen()
@@ -10,6 +12,9 @@ def open_project(main_menu):
     project        = projects[ list_options([ x.name for x in projects ], back=main_menu) ]
     local_version  = Path(f"{project.absolute()}/{project.name}.song")
     local_conflict = Path(f"{project.absolute()}/{project.name}_yourversion.song")
+
+    # Push a notification to Slack
+    Slack(f'{Slack.get_nice_username()} is working on {Slack.make_nice_project_name(project.name)}')
 
     if local_conflict.exists():
         print("")

@@ -179,8 +179,7 @@ def compress_and_upload(main_menu):
     clear_temp()
 
     # Push a notification to Slack
-    notification = f'{get_nice_username()} uploaded a new version of {project.name}'
-    Slack(notification)
+    Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(project.name)}')
 
     log("Compression and upload complete!")
     pause()

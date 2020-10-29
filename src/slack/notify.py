@@ -31,3 +31,9 @@ class Notify:
 
     def endpoint(self):
         return Settings.get()[self.get_endpoint_key()]
+
+    def get_nice_username():
+        return Settings.get_user(capitalize=True)
+
+    def make_nice_project_name(name):
+        return f'"{name.replace("_"," ")}"'
