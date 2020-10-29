@@ -1,6 +1,12 @@
 # UPGRADE TO V1.1
 
-import sys
+# this is required to access 'src' modules
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir  = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+##########################################
+
 from pathlib import Path
 from src.settings.Settings import Settings
 from src.helpers import pause
