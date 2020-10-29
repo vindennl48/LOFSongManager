@@ -1,6 +1,7 @@
 import requests
 import json
-from src.env import *
+from src.dev import dev
+from src.helpers import get_settings
 
 
 class Notify:
@@ -17,4 +18,12 @@ class Notify:
         )
 
     def endpoint(self):
-        return f'{SLACK_WEBHOOK_BASE}/{SLACK_WEBHOOK_ENDPOINT}'
+        endpoint_key = ''
+        settings = get_settings()
+
+        if dev("DEVELOPMENT"):
+            endpoint_key = 'slack_endpoint_dev'
+        else:
+            endpoint_key = 'slack_endpoint_prod'
+
+        return settings[endpoint_key]

@@ -494,6 +494,22 @@ def create_settings():
                     clear_folder(Path("extracted_songs"))
                     clear_folder(Path("compressed_songs"))
 
+        if (not 'slack_endpoint_prod' in settings or
+                not 'slack_endpoint_dev' in settings):
+            clear_screen()
+            endpoints = prompt_for_slack_endpoints()
+
+            settings['slack_endpoint_prod'] = endpoints['production']
+            settings['slack_endpoint_dev']  = endpoints['development']
+
+            with open(settings_file.absolute(), 'w') as f:
+                json.dump(settings, f)
+
+            print('')
+            print('   Finished setting up Slack integration.')
+            print('')
+            pause()
+
     if not settings_file.exists():
         print(':: Welcome!')
         print('')
@@ -512,10 +528,47 @@ def create_settings():
         settings['user']    = name
         settings['version'] = VERSION
 
+        clear_screen()
+        endpoints = prompt_for_slack_endpoints()
+
+        settings['slack_endpoint_prod'] = endpoints['production']
+        settings['slack_endpoint_dev']  = endpoints['development']
+
         with open(settings_file.absolute(), 'w') as f:
             json.dump(settings, f)
 
+        print('')
+        print('   Finished setting up Slack integration.')
+        print('')
+        pause()
+
+def prompt_for_slack_endpoints():
+    print(':: Slack integration setup')
+    print('')
+    print('   Enter the production and development webhook URLs to finish')
+    print('   setting up the Slack integration. The URLs are listed on the')
+    print('   Drive here:')
+    print('')
+    print('     ---> https://drive.google.com/file/d/1xfqoWJN_bLi8E0f7n5eRbWxf1uDALKB7/view?usp=sharing')
+    print('')
+
+    production_endpoint = input('Production endpoint URL: ').lower()
+    development_endpoint = input('Development endpoint URL: ').lower()
+
+    return {
+        'production': production_endpoint,
+        'development': development_endpoint,
+    }
+
 def get_username():
+    settings = get_settings()
+
+    return settings['user']
+
+def get_nice_username():
+    return get_username().capitalize()
+
+def get_settings():
     settings_file = Path('.settings')
     settings      = {}
 
@@ -525,7 +578,4 @@ def get_username():
     with open(settings_file.absolute()) as f:
         settings = json.load(f)
 
-    return settings['user']
-
-def get_nice_username():
-    return get_username().capitalize()
+    return settings
