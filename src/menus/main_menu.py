@@ -31,13 +31,3 @@ def main_menu():
     menu_items[ans][1](main_menu)
 
     main_menu()
-
-
-
-# MAIN FUNCTION
-if __name__ == '__main__':
-    main_menu()
-
-
-
-
