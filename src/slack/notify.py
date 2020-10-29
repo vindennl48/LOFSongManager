@@ -1,7 +1,8 @@
 import requests
 import json
 from src.dev import dev
-from src.helpers import get_settings
+from src.settings.Settings import Settings
+from src.helpers import log
 
 
 class Notify:
@@ -11,19 +12,22 @@ class Notify:
     def __init__(self, text):
         data = { "text": text }
 
+        log("Sending Slack Notification..")
+
         requests.post(
             self.endpoint(),
             data = json.dumps(data),
             headers = self.headers,
         )
 
-    def endpoint(self):
-        endpoint_key = ''
-        settings = get_settings()
+        log(f'Notify ({self.get_endpoint_key()}): "{text}"')
+        log("Slack Notification Sent!")
 
+    def get_endpoint_key(self):
         if dev("DEVELOPMENT"):
-            endpoint_key = 'slack_endpoint_dev'
+            return 'slack_endpoint_dev'
         else:
-            endpoint_key = 'slack_endpoint_prod'
+            return 'slack_endpoint_prod'
 
-        return settings[endpoint_key]
+    def endpoint(self):
+        return Settings.get()[self.get_endpoint_key()]

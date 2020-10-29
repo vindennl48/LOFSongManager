@@ -281,25 +281,6 @@ def clear_temp():
         log("Development Mode prevented clear_temp function")
     log("Temp directory cleared!")
 
-def git_update():
-    if os.name == 'nt':
-        git = Path("src/PortableGit/bin/git")
-        os.system(f'"{git.absolute()}" pull --rebase')
-    else:
-        os.system("git pull --rebase")
-
-def pip_install():
-    if os.name == 'nt':
-        os.system("pip install -r requirements.txt")
-    else:
-        os.system("pip3 install -r requirements.txt")
-
-def pip_freeze():
-    if os.name == 'nt':
-        os.system("pip freeze > requirements.txt")
-    else:
-        os.system("pip3 freeze > requirements.txt")
-
 def get_folders(directory):
     directory = Path(directory)
     folders = glob(f"{directory.absolute()}/*/")
@@ -471,109 +452,12 @@ def open_SO_projects(*args):
         recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
         local_version_temp.unlink()
 
-def create_settings():
-    # if settings dont exist
-    settings_file = Path('.settings')
-    settings      = {}
-
-    if settings_file.exists():
-        with open(settings_file.absolute()) as f:
-            settings = json.load(f)
-
-        if not "version" in settings or settings['version'] != VERSION:
-            settings_file.unlink()
-
-            print("\n\n  :: Would you like to remove all local projects and start fresh?\n\n")
-            ans = input("(y/n): ")
-
-            if ans == "y":
-                print("\n\n  :: Are you sure? This can not be undone! \n\n")
-                ans = input("(y/n): ")
-
-                if ans == "y":
-                    clear_folder(Path("extracted_songs"))
-                    clear_folder(Path("compressed_songs"))
-
-        if (not 'slack_endpoint_prod' in settings or
-                not 'slack_endpoint_dev' in settings):
-            clear_screen()
-            endpoints = prompt_for_slack_endpoints()
-
-            settings['slack_endpoint_prod'] = endpoints['production']
-            settings['slack_endpoint_dev']  = endpoints['development']
-
-            with open(settings_file.absolute(), 'w') as f:
-                json.dump(settings, f)
-
-            print('')
-            print('   Finished setting up Slack integration.')
-            print('')
-            pause()
-
-    if not settings_file.exists():
-        print(':: Welcome!')
-        print('')
-        print('   Since this is your first time using this software, we')
-        print('   need to know your name to get things working smoothly!')
-        print('')
-        print('   What is your first name?')
-        print('')
-
-        name = input("Name: ").lower()
-
-        print('\n   Thanks!!\n')
-
-        pause()
-
-        settings['user']    = name
-        settings['version'] = VERSION
-
-        clear_screen()
-        endpoints = prompt_for_slack_endpoints()
-
-        settings['slack_endpoint_prod'] = endpoints['production']
-        settings['slack_endpoint_dev']  = endpoints['development']
-
-        with open(settings_file.absolute(), 'w') as f:
-            json.dump(settings, f)
-
-        print('')
-        print('   Finished setting up Slack integration.')
-        print('')
-        pause()
-
-def prompt_for_slack_endpoints():
-    print(':: Slack integration setup')
-    print('')
-    print('   Enter the production and development webhook URLs to finish')
-    print('   setting up the Slack integration. The URLs are listed on the')
-    print('   Drive here:')
-    print('')
-    print('     ---> https://drive.google.com/file/d/1xfqoWJN_bLi8E0f7n5eRbWxf1uDALKB7/view?usp=sharing')
-    print('')
-
-    production_endpoint = input('Production endpoint URL: ').lower()
-    development_endpoint = input('Development endpoint URL: ').lower()
-
-    return {
-        'production': production_endpoint,
-        'development': development_endpoint,
-    }
-
 def get_username():
-    settings = get_settings()
-
-    return settings['user']
-
-def get_nice_username():
-    return get_username().capitalize()
+    return get_settings()['user']
 
 def get_settings():
     settings_file = Path('.settings')
     settings      = {}
-
-    if not settings_file.exists():
-        create_settings()
 
     with open(settings_file.absolute()) as f:
         settings = json.load(f)

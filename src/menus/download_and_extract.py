@@ -6,6 +6,7 @@ from src.hashing import *
 from src.Drive import Drive
 from src.env import LOFSM_DIR_HASH
 from src.slack.notify import Notify as Slack
+from src.settings.Settings import Settings
 
 def download_and_extract(main_menu):
     print("")
@@ -29,7 +30,7 @@ def download_and_extract(main_menu):
     download_version = Path(f"{temp_project}/{project.stem}.song")
 
     # Push a notification to Slack
-    notification = f'{get_nice_username()} is working on {project.name}'
+    notification = f'{Settings.get_user(capitalize=True)} is working on {project.name}'
     Slack(notification)
 
     # check hashes
