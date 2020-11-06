@@ -1,5 +1,4 @@
-import os
-import subprocess
+import os, subprocess
 from pathlib import Path
 
 class Run:
@@ -21,13 +20,17 @@ class Run:
             "nt": "start",
             "mac": "open",
         },
+        "clear": {
+            "nt": "cls",
+            "mac": "clear",
+        },
         "wait": {
             "nt": "/wait",
             "mac": "-W",
         },
     }
 
-    def prg(alias, command, wait=False, useSubprocess=False):
+    def prg(alias, command="", wait=False, useSubprocess=False):
         if not alias in Run.alias:
             raise Exception("Alias is not in Run.alias list!")
 
