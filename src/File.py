@@ -16,7 +16,7 @@ class File:
 
     def get_json(filepath):
         filepath = Path(filepath)
-        result   = {}
+        result   = None
 
         if filepath.exists():
             with open(filepath.absolute()) as f:
@@ -30,11 +30,13 @@ class File:
         with open(filepath.absolute(), "w") as f:
             json.dump(data, f, indent=4)
 
-    def get_json_or_create(filepath, data):
-        filepath = Path(filepath)
+    def set_json_key(filepath, key, data):
+        json_file      = File.get_json(filepath)
+        json_file[key] = data
+        File.set_json(filepath, json_file)
 
-        if filepath.exists():
-            return File.get_json(filepath)
-        else:
-            File.set_json(filepath, data)
-            return data
+    def get_json_key(filepath, key):
+        json_file = File.get_json(filepath)
+        if not key in json_file:
+            return None
+        return json_file[key]

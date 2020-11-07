@@ -3,8 +3,58 @@ import json
 from pathlib import Path
 from src.helpers import *
 from src.Drive import Drive
+from src.File import File
 from src.env import LOFSM_DIR_HASH
 from src.env import LOFSM_DIR_PATH
+
+
+class Hash:
+
+    db_fpath        = Path("compressed_songs/db.json")
+    remote_db_fpath = f'{LOFSM_DIR_PATH}/db.json'
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.hash     = self.hash_file(filepath)
+
+        self.set_local()
+
+    def hash_file(self, filepath):
+        filepath   = Path(filepath)
+        BLOCK_SIZE = 1024*1024
+        result     = hashlib.sha256()
+
+        with open(filepath.absolute(), 'rb') as f:
+            fb = f.read(BLOCK_SIZE)
+            while len(fb) > 0:
+                result.update(fb)
+                fb = f.read(BLOCK_SIZE)
+
+        return result.hexdigest()
+
+    def set_local(self):
+        if not Hash.db_fpath.exists():
+            File.set_json(
+                Hash.db_fpath.absolute(),
+                {}
+            )
+
+        File.set_json_key(
+            Hash.db_fpath.absolute(),
+            self.filepath.name,
+            self.hash
+        )
+
+    def get_remote(self):
+        # make some functions in the Drive class to handle .json data
+        pass
+
+    def push(self):
+        pass
+
+    def compare(self):
+        pass
+
 
 def hash_file(file):
     file       = Path(file)
