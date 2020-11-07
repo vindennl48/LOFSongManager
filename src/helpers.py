@@ -11,19 +11,8 @@ from src.env import VERSION
 from src.dev import *
 
 ## HELPERS
-def log(text):
-    print("---->", text)
 
-def pause():
-    log("Press Enter to Continue..")
-    input()
-
-def clear_screen():
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-
+# MAKE A NEW CLASS TO DEAL WITH TARRING FILES
 def tar_file(file, destination):
     file        = Path(file)
     destination = Path(destination)
@@ -50,7 +39,9 @@ def untar_file(file, destination):
         print(e)
         exit()
     log(f"Extraction of {file.stem} complete!")
+########################################
 
+# MAKE A NEW CLASS TO DEAL WITH AUDIO CONVERSION
 def ffmpeg(args, source, destination, codec=""):
     command        = []
     command_string = ""
@@ -187,128 +178,9 @@ def wav_to_mp3(directory, destination):
             ffmpeg("-i", wav.absolute(), mp3.absolute())
         else:
             log(f'Keeping file "{mp3}"')
+########################################
 
-def mkdir(path):
-    path = Path(path)
-
-    if path.is_file():
-        log(f'Error: "{path.name}" is already a file!')
-        log( "       Exiting Program..")
-        exit()
-    elif path.is_dir():
-        log(f'Warning: Directory "{path.name}" already exists!')
-        return False
-    else:
-        os.makedirs(path.absolute())
-        log(f'Created directory "{path.name}"')
-        return True
-
-def recursive_overwrite(src, dest, ignore=None):
-    # taken from: https://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all
-    if os.path.isdir(src):
-        if not os.path.isdir(dest):
-            os.makedirs(dest)
-        files = os.listdir(src)
-        if ignore is not None:
-            ignored = ignore(src, files)
-        else:
-            ignored = set()
-        for f in files:
-            if f not in ignored:
-                recursive_overwrite(os.path.join(src, f),
-                                    os.path.join(dest, f),
-                                    ignore)
-    else:
-        src  = Path(src)
-        dest = Path(dest)
-
-        if dest.exists():
-            if not filecmp.cmp(src.absolute(), dest.absolute(), shallow=False):
-                log(f'Overwriting file "{src.name}"')
-            else:
-                log(f'Keeping file "{src.name}"')
-                return 0
-        else:
-            log(f'Copying new file "{src.name}"')
-
-        shutil.copyfile(src, dest)
-def display_title(text):
-    if dev("DEVELOPMENT"):
-        print(f"::      DEVELOPMENT MODE     ::")
-
-    print(f"###############################")
-    print(f"  LOF Studio One Song Manager  ")
-    print(f"            V{VERSION}         ")
-    print(f"###############################")
-    print(f":: {text} \n")
-
-def list_options(options, back=False):
-    for i, option in enumerate(options, start=1):
-        if isinstance(option, list):
-            print(f"   {i}) {option[0]}")
-        else:
-            print(f"   {i}) {option}")
-    if back:
-        print("")
-        print(f"   b) Back")
-    print("")
-
-    result = input(": ")
-
-    if back and (result == 'B' or result == 'b'):
-        back()
-    elif result.isnumeric() and int(result) <= len(options):
-        return (int(result) - 1)
-    else:
-        log("Invalid response, please try again..")
-        pause()
-        return list_options(options, back)
-
-def clear_folder(path):
-    path = Path(path)
-    log(f"Clearing out '{path.name}' directory..")
-    if path.exists():
-        shutil.rmtree(path.absolute())
-    mkdir(path.absolute())
-    log(f"'{path.name}' directory cleared!")
-
-def clear_temp():
-    if not dev("NO_CLEAR_TEMP"):
-        log("Clearing out temp directory..")
-        shutil.rmtree("temp")
-        mkdir("temp")
-    else:
-        log("Development Mode prevented clear_temp function")
-    log("Temp directory cleared!")
-
-def get_folders(directory):
-    directory = Path(directory)
-    folders = glob(f"{directory.absolute()}/*/")
-    folders = [ Path(x) for x in folders ]
-    return folders
-
-def get_files(directory, extension):
-    directory = Path(directory)
-    files = glob(f"{directory.absolute()}/*.{extension}")
-    files = [ Path(x) for x in files ]
-    return files
-
-def split_file_name(file):
-    # This splits a filename 'Mitch(23).wav' into
-    # [ "Mitch", 23 ] or 'Mitch(REC)(26).wav' into
-    # [ "Mitch(REC)", 26 ]
-    file, ext  = file.split(".")
-    file_array = file.split("(")
-    num        = re.findall(r"(\d+)\)", file_array[-1])
-    num        = int(num[0]) if len(num) > 0 else 0
-    file_stem  = ""
-
-    if num > 0:
-        file_array.pop()
-    file_stem = "(".join(file_array)
-
-    return [ file_stem, num, ext ]
-
+# MAKE A NEW CLASS TO DEAL WITH DUMMY FILES
 def get_dummy_data(project_dir):
     log("Getting dummy data")
     project_dir = Path(project_dir)
@@ -403,6 +275,10 @@ def remove_dummy_files(project_dir_raw):
 
     log("Removed dummy files!")
 
+########################################
+
+
+# MAKE A NEW CLASS TO DEAL WITH STUDIO ONE
 def open_project(file, wait=False):
     file = Path(file)
     prg  = "open"
@@ -451,15 +327,4 @@ def open_SO_projects(*args):
 
         recursive_overwrite(local_version_temp.absolute(), local_version.absolute())
         local_version_temp.unlink()
-
-def get_username():
-    return get_settings()['user']
-
-def get_settings():
-    settings_file = Path('.settings')
-    settings      = {}
-
-    with open(settings_file.absolute()) as f:
-        settings = json.load(f)
-
-    return settings
+########################################

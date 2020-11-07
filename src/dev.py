@@ -4,9 +4,6 @@ class Dev:
 
     filepath = ".dev"
 
-    def __init__(self, key):
-        Dev.get(key)
-
     def isDev():
         return Dev.get("DEVELOPMENT")
 
@@ -21,9 +18,14 @@ class Dev:
             return False
 
     def get_data():
-        return File.get_json_or_create(
-            Dev.filepath,
-            {
-                "DEVELOPMENT": False,
-            }
-        )
+        json_file = File.get_json(Dev.filepath)
+
+        if not json_file:
+            json_file = { "DEVELOPMENT": False, }
+
+            File.set_json(
+                filepath = Dev.filepath,
+                data     = json_file
+            )
+
+        return json_file

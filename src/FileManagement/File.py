@@ -1,0 +1,93 @@
+import json, os, shutil
+from pathlib import Path
+from src.TERMGUI.Log import Log
+
+class File:
+    def append(filepath, text):
+        filepath = Path(filepath)
+
+        with open(filepath.absolute(), "a") as f:
+            f.write(f'{text}\n')
+
+    def delete(filepath):
+        filepath = Path(filepath)
+
+        if filepath.exists():
+            filepath.unlink()
+
+    def recursive_overwrite(src, dest, ignore=None):
+        # taken from: https://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all
+        if os.path.isdir(src):
+            if not os.path.isdir(dest):
+                os.makedirs(dest)
+            files = os.listdir(src)
+            if ignore is not None:
+                ignored = ignore(src, files)
+            else:
+                ignored = set()
+            for f in files:
+                if f not in ignored:
+                    recursive_overwrite(os.path.join(src, f),
+                                        os.path.join(dest, f),
+                                        ignore)
+        else:
+            src  = Path(src)
+            dest = Path(dest)
+
+            Log(f'Attempting to create file "{src.name}"..')
+            if dest.exists():
+                if not filecmp.cmp(src.absolute(), dest.absolute(), shallow=False):
+                    Log(f'Older duplicate found! Overwriting file "{src.name}"')
+                else:
+                    Log(f'Keeping original file for "{src.name}"')
+                    return False
+            else:
+                Log(f'Copying new file "{src.name}"')
+
+            shutil.copyfile(src, dest)
+            return True
+
+    def spit_name(filepath):
+        # This splits a filename 'Mitch(23).wav' into
+        # [ "Mitch", 23 ] or 'Mitch(REC)(26).wav' into
+        # [ "Mitch(REC)", 26 ]
+        file       = Path(filepath).name
+        file, ext  = file.split(".")
+        file_array = file.split("(")
+        num        = re.findall(r"(\d+)\)", file_array[-1])
+        num        = int(num[0]) if len(num) > 0 else 0
+        file_stem  = ""
+
+        if num > 0:
+            file_array.pop()
+        file_stem = "(".join(file_array)
+
+        return [ file_stem, num, ext ]
+
+
+    def get_json(filepath):
+        filepath = Path(filepath)
+        result   = None
+
+        if filepath.exists():
+            with open(filepath.absolute()) as f:
+                result = json.load(f)
+
+        return result
+
+    def set_json(filepath, data):
+        filepath = Path(filepath)
+
+        with open(filepath.absolute(), "w") as f:
+            json.dump(data, f, indent=4)
+
+    def set_json_key(filepath, key, data):
+        json_file      = File.get_json(filepath)
+        json_file[key] = data
+        File.set_json(filepath, json_file)
+
+    def get_json_key(filepath, key):
+        json_file = File.get_json(filepath)
+        if not key in json_file:
+            return None
+        return json_file[key]
