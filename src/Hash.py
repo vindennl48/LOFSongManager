@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 from src.Drive import Drive
-from src.File import File
+from src.FileManagement.File import File
 from src.env import LOFSM_DIR_PATH
 
 

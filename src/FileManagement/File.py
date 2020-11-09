@@ -1,20 +1,9 @@
-import json, os, shutil
+import json, os, shutil, re
 from pathlib import Path
 from src.TERMGUI.Log import Log
+from src.FileManagement.FileEdit import FileEdit
 
-class File:
-    def append(filepath, text):
-        filepath = Path(filepath)
-
-        with open(filepath.absolute(), "a") as f:
-            f.write(f'{text}\n')
-
-    def delete(filepath):
-        filepath = Path(filepath)
-
-        if filepath.exists():
-            filepath.unlink()
-
+class File(FileEdit):
     def recursive_overwrite(src, dest, ignore=None):
         # taken from: https://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all
         if os.path.isdir(src):
@@ -47,7 +36,7 @@ class File:
             shutil.copyfile(src, dest)
             return True
 
-    def spit_name(filepath):
+    def split_name(filepath):
         # This splits a filename 'Mitch(23).wav' into
         # [ "Mitch", 23 ] or 'Mitch(REC)(26).wav' into
         # [ "Mitch(REC)", 26 ]

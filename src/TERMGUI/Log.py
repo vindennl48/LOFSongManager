@@ -1,6 +1,6 @@
 import textwrap, os
 from datetime import datetime
-from src.File import File
+from src.FileManagement.FileEdit import FileEdit
 from src.TERMGUI.Run import Run
 
 class Log:
@@ -53,9 +53,9 @@ class Log:
 
     def save_to_file(text):
         if Log.line == 0:
-            File.delete(Log.filepath)
+            FileEdit.delete(Log.filepath)
 
-            File.append(
+            FileEdit.append(
                 Log.filepath,
                 "\n".join([
                     "##############################",
@@ -65,7 +65,7 @@ class Log:
                 ])
             )
 
-        File.append(Log.filepath, f'{Log.line}: {text}')
+        FileEdit.append(Log.filepath, f'{Log.line}: {text}')
 
         Log.line += 1
 

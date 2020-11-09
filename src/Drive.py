@@ -1,6 +1,6 @@
 import os, io, pickle, shutil
 from pathlib import Path
-from src.File import File
+from src.FileManagement.File import File
 from src.env import LOFSM_DIR_HASH
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload

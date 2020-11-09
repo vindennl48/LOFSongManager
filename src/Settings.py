@@ -1,6 +1,6 @@
 from decimal import Decimal
 from pathlib import Path
-from src.File import File
+from src.FileManagement.File import File
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 

@@ -2,7 +2,7 @@ import textwrap
 from src.TERMGUI.Log import Log
 
 class Dialog:
-    def __init__(self, title, body):
+    def __init__(self, title, body, clear=True):
         self.stack = [
             f'',
             f'',
@@ -10,7 +10,8 @@ class Dialog:
             f'',
             self.create_body(body),
         ]
-        self.run()
+
+        self.show(self.stack, clear)
 
     def get_mult_choice(self, options):
         if isinstance(options, list):
@@ -28,6 +29,10 @@ class Dialog:
     def get_result(self, prompt=None):
         return input(f'  {prompt}: ').lower()
 
+    def press_enter(self):
+        Log.press_enter()
+        return self
+
     def show(self, stack, clear=True):
         if clear:
             Log.clear()
@@ -35,10 +40,6 @@ class Dialog:
         for line in stack:
             print(line)
 
-        return self
-
-    def run(self):
-        self.show(self.stack)
         return self
 
     def create_title(self, title):

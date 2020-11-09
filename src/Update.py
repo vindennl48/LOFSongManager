@@ -3,7 +3,7 @@ from glob import glob
 from decimal import Decimal
 from pathlib import Path
 from src.helpers import pause
-from src.dev import dev
+from src.Dev import Dev
 from src.run.Run import Run
 from src.settings.Settings import Settings
 from src.env import VERSION
@@ -26,7 +26,7 @@ class Update:
 
     def install_pip_packages():
         Run.prg("pip", "install -r requirements.txt")
-        if dev("DEVELOPMENT"):
+        if Dev.isDev():
             Run.prg("pip", "freeze > requirements.txt")
 
     def run_migrations():
