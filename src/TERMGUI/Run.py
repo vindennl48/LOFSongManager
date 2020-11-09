@@ -1,5 +1,6 @@
 import os, subprocess
 from pathlib import Path
+from src.TERMGUI.Dialog import Dialog
 
 class Run:
 

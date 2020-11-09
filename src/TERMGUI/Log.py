@@ -1,7 +1,6 @@
 import textwrap, os
 from datetime import datetime
 from src.FileManagement.FileEdit import FileEdit
-from src.TERMGUI.Run import Run
 
 class Log:
 
@@ -12,17 +11,20 @@ class Log:
         Log.out(text, leader, end, quiet)
 
     def out(text, leader, end, quiet):
-        if leader == 2 or leader == "warning":
+        if leader == "warning":
             leader = "####"
+            end    = " "
 
-        elif leader == 3 or leader == "notice":
+        elif leader == "notice":
             leader = "  =="
 
-        elif leader == 4:
+        elif leader == "alert":
             leader = "  ::"
+            end    = " "
 
-        elif leader == 5 or leader == "spaces":
+        elif leader == "sub":
             leader = "    "
+            end    = " "
 
         elif leader == 6 or leader == "arrow":
             leader = "----"
@@ -68,8 +70,3 @@ class Log:
         FileEdit.append(Log.filepath, f'{Log.line}: {text}')
 
         Log.line += 1
-
-    def clear():
-        Run.prg("clear")
-        Log.save_to_file("\n  ## *ClearScreen* ##\n")
-

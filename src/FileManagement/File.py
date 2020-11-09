@@ -1,4 +1,4 @@
-import json, os, shutil, re
+import json, os, shutil, re, filecmp
 from pathlib import Path
 from src.TERMGUI.Log import Log
 from src.FileManagement.FileEdit import FileEdit
@@ -23,15 +23,13 @@ class File(FileEdit):
             src  = Path(src)
             dest = Path(dest)
 
-            Log(f'Attempting to create file "{src.name}"..')
+            Log(f'Copying "{src.name}" to "{dest.name}"..')
             if dest.exists():
                 if not filecmp.cmp(src.absolute(), dest.absolute(), shallow=False):
-                    Log(f'Older duplicate found! Overwriting file "{src.name}"')
+                    Log(f'Older duplicate found! Overwriting file "{dest.name}"', "blank")
                 else:
-                    Log(f'Keeping original file for "{src.name}"')
+                    Log(f'Keeping original file "{dest.name}"', "sub")
                     return False
-            else:
-                Log(f'Copying new file "{src.name}"')
 
             shutil.copyfile(src, dest)
             return True

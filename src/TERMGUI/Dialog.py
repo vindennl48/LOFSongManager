@@ -1,5 +1,6 @@
 import textwrap
 from src.TERMGUI.Log import Log
+from src.TERMGUI.Term import Term
 
 class Dialog:
     def __init__(self, title, body, clear=True):
@@ -35,7 +36,7 @@ class Dialog:
 
     def show(self, stack, clear=True):
         if clear:
-            Log.clear()
+            Term.clear()
 
         for line in stack:
             print(line)
