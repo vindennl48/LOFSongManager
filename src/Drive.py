@@ -40,6 +40,10 @@ class Drive:
         self.service = build("drive", "v3", credentials=creds)
 
     def get_info(self, search):
+        # This function returns the ID of a file or folder given 
+        #   its Drive filepath.  (I keep forgetting this gets file
+        #   ID's as well as folder ID's.  The 'parent' variable
+        #   is a bit miss-leading)
         if "/" in search:
             path_list = search.split("/")
             parent    = None
@@ -172,7 +176,7 @@ class Drive:
 
         return File.get_json(local_filepath)
 
-    def set_json(self, remote_file, local_filepath, parents=[LOFSM_DIR_HASH]):
+    def set_json(self, local_filepath, parents=[LOFSM_DIR_HASH]):
         # remote_file    = cloud ID or cloud filepath
         # local_filepath = place to save the json file temporarily
         local_filepath = Path(local_filepath)
@@ -195,4 +199,4 @@ class Drive:
     def set_json_key(self, remote_file, local_filepath, key, data, parents=[LOFSM_DIR_HASH]):
         self.get_json(remote_file, local_filepath)
         File.set_json_key(local_filepath, key, data)
-        self.set_json(remote_file, local_filepath, parents)
+        self.set_json(local_filepath, parents)

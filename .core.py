@@ -1,15 +1,32 @@
 from pathlib import Path
-from src.update.Update import Update
-from src.run.Run import Run
-from src.helpers import pause
+from src.Update import Update
+from src.TERMGUI.Run import Run
+from src.TERMGUI.Dialog import Dialog
 
 def start_main_program():
     main = Path(".main.py")
 
     if main.exists():
-        Run.prg("python", f'"{main.absolute()}"')
+        ans = Run.prg("python", f'"{main.absolute()}"', useSubprocess=True)
+
+        if ans == 0:
+            # There was an error
+            pass
+
     else:
-        raise Exception(f'"{main.absolute()}" doesnt exist!.. Something went terribly wrong..')
+        Dialog(
+            title = "Fatal Error!",
+            body  = [
+                f'"{main.absolute()}" doesnt exist!',
+                f'\n',
+                f'\n',
+                f'Something went terribly wrong.. Contact your',
+                f'administrator.',
+                f'\n',
+                f'\n',
+            ],
+            clear = False
+        ).press_enter()
 
 
 ## MAIN FUNCTION

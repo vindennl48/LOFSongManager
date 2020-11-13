@@ -1,23 +1,37 @@
-import json
 from glob import glob
 from decimal import Decimal
 from pathlib import Path
-from src.helpers import pause
 from src.Dev import Dev
-from src.run.Run import Run
-from src.settings.Settings import Settings
+from src.TERMGUI.Run import Run
+from src.TERMGUI.Log import Log
+from src.TERMGUI.Dialog import Dialog
+from src.Settings import Settings
 from src.env import VERSION
-from src.slack.notify import Notify as Slack
+# from src.slack.notify import Notify as Slack
 
 class Update:
     def run():
+        if Dev.get("DO_NOT_UPDATE"):
+            return True
+
         Update.pull_updates_from_git()
         result = Update.run_migrations()
 
         if Decimal(VERSION) != Settings.get_version():
-            print("\n\n 'src.env.VERSION' does not match the current version!")
-            print(" Please notify your administrator! \n\n")
-            pause()
+            Dialog(
+                title = "Version Mismatch!",
+                body  = [
+                    f'src.env.VERSION does not match the current version!',
+                    f'The version number was not updated properly.',
+                    f'\n',
+                    f'\n',
+                    f'Please notify your administrator!',
+                    f'\n',
+                    f'\n',
+                ],
+                clear = False
+            )
+            Log.press_enter()
 
         return result
 
@@ -52,6 +66,6 @@ class Update:
                 Settings.set_version(migration_version)
 
                 # Push a notification to Slack
-                Slack(f'{Settings.get_user(capitalize=True)} has upgraded to V{migration_version}!')
+                # Slack(f'{Settings.get_user(capitalize=True)} has upgraded to V{migration_version}!')
 
         return result

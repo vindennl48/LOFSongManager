@@ -1,6 +1,7 @@
-import textwrap
 from src.env import VERSION
 from src.Dev import Dev
+from src.TERMGUI.Term import Term
+from src.TERMGUI.Log import Log
 
 class Menu:
     def __init__(self, title, options, back=True):
@@ -21,7 +22,7 @@ class Menu:
 
     def show(self, stack, clear=True):
         if clear:
-            clear_screen()
+            Term.clear()
 
         for line in stack:
             print(line)
@@ -79,7 +80,7 @@ class Menu:
         print(f'')
         print(f'"{ans}" is not a valid option!')
         print(f'')
-        pause()
+        Log.press_enter()
 
         return self.create_stack().run().get_result()
 
