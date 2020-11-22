@@ -16,9 +16,9 @@ class File(FileEdit):
                 ignored = set()
             for f in files:
                 if f not in ignored:
-                    recursive_overwrite(os.path.join(src, f),
-                                        os.path.join(dest, f),
-                                        ignore)
+                    File.recursive_overwrite(os.path.join(src, f),
+                                             os.path.join(dest, f),
+                                             ignore)
         else:
             src  = Path(src)
             dest = Path(dest)

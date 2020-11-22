@@ -1,5 +1,6 @@
-import os
+import os, shutil
 from glob import glob
+from src.Dev import Dev
 from pathlib import Path
 from src.TERMGUI.Log import Log
 
@@ -23,7 +24,7 @@ class Folder:
     def clear(folderpath):
         folderpath = Path(folderpath)
         if folderpath.exists():
-            sutil.rmtree(folderpath.absolute())
+            shutil.rmtree(folderpath.absolute())
         Folder.create(folderpath.absolute())
 
     def clear_temp():

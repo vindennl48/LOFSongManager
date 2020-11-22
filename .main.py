@@ -1,6 +1,6 @@
 from src.Settings import Settings
 from src.FileManagement.Folder import Folder
-from src.menus.main_menu import main_menu
+from src.menus.menu_main import menu_main
 
 # MAIN FUNCTION
 if __name__ == '__main__':
@@ -15,4 +15,4 @@ if __name__ == '__main__':
     Settings.create()
 
     # Start main menu
-    main_menu()
+    menu_main()

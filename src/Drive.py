@@ -152,7 +152,7 @@ class Drive:
                 print(f"----> Downloaded {int(status.progress() * 100)}%", end="\r", flush=True)
 
         if downloader:
-            print("Downloaded successfully!")
+            print("      Downloaded successfully!")
 
             fh.seek(0)
             with open(save_path.absolute(), "wb") as f:

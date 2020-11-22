@@ -1,9 +1,14 @@
 import time, filecmp
+from glob import glob
 from pathlib import Path
 from src.Dev import Dev
+from src.Audio import Audio
+from src.DummyFiles import DummyFiles
 from src.Drive import Drive
 from src.env import LOFSM_DIR_PATH, LOFSM_DIR_HASH
 from src.Hash import Hash
+from src.Tar import Tar
+from src.Slack import Slack
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Dialog import Dialog
@@ -33,6 +38,9 @@ class Project:
         self.compressed       = Path(f'{self._compressed_path()}/{name}.lof')
         self.remote           = f'{LOFSM_DIR_PATH}/{self.name}.lof'
         self.hash             = Hash(self.compressed)
+        self.dummy            = DummyFiles(f'{self._extracted_path()}')
+        self.did_notify       = False
+        self.drive            = Drive()
 
     def is_dirty(self):
         if self.song.exists() and self.song_original.exists():
@@ -49,7 +57,7 @@ class Project:
         return self.compressed.exists()
 
     def is_remote(self):
-        if Drive().get_info(self.remote):
+        if self.drive.get_info(self.remote):
             return True
         return False
 
@@ -69,7 +77,7 @@ class Project:
             else:
                 result.append(flags["not_uploaded"])
 
-        elif not self.is_recent():
+        elif not self.is_recent() and self.is_remote():
             if self.is_dirty():
                 result.append(flags["update_conflict"])
             else:
@@ -95,6 +103,9 @@ class Project:
     def _temp_path(self):
         return f'{Project.temp_parent}/{self.name}'
 
+    def _clear_conflict(self):
+        File.delete(self.yourversion)
+
     ## Static ##
     def get_local_projects():
         return [ Project(x.name) for x in Folder.ls_folders(Project.extracted_parent) ]
@@ -117,6 +128,10 @@ class Project:
 ## Opening Projects 
 ##################################################
     def open(self):
+
+        if not self._update():
+            return False
+
         if self.yourversion.exists():
             dialog = Dialog(
                 title = "A Conflict Exists in This Project!",
@@ -142,11 +157,11 @@ class Project:
             ans = dialog.get_mult_choice(["1","2","3","b"])
 
             if ans == "1":
-                self._open_temp_and_conflict()
+                self._open_temp_and_yourversion()
             elif ans == "2":
-                self._open_temp()
+                self._open_yourversion()
             elif ans == "3":
-                self._open_conflict()
+                self._open_temp()
             elif ans == "b":
                 return False
         else:
@@ -154,12 +169,138 @@ class Project:
 
         return True
 
+    def _update(self):
+        if not self.is_recent() and self.is_remote():
+            if self.song.exists():
+                Log("Update available!", "notice")
+
+            if self.yourversion.exists():
+                dialog = Dialog(
+                    title = "A Conflict Still Exists!",
+                    body  = [
+                        f'A conflict still exists in this project.  We can',
+                        f'not update your project until this conflict gets',
+                        f'resolved!',
+                        f'\n',
+                        f'\n',
+                        f'If you are certain that this conflict was already',
+                        f'taken care of, press "y".',
+                        f'\n',
+                        f'\n',
+                        f'If you need some more time to resolve the conflict,',
+                        f'press "n"',
+                        f'\n',
+                        f'\n',
+                    ], clear=False
+                )
+
+                ans = dialog.get_mult_choice("y","n")
+
+                if ans == "n":
+                    return False
+
+                self._clear_conflict()
+
+            Log("Downloading.. please be patient", "notice")
+
+            result = self.drive.download(
+                ID        = self.drive.get_info(self.remote),
+                save_path = self.compressed
+            )
+
+            if not result:
+                Log("Drive download could not complete..", "warning")
+                Log.press_enter()
+                return False
+
+            self._unpack()
+
+        return True
+
+    def _unpack(self):
+        # convert compressed project to extracted project
+        Folder.clear_temp()
+        Tar.extract(
+            filepath    = self.compressed,
+            destination = Project.temp_parent
+        )
+
+        if self.song.exists() and self.song_original.exists():
+            if not filecmp.cmp(self.song, self.song_original, shallow=False):
+                dialog = Dialog(
+                    title = "Local changes found!",
+                    body  = [
+                        f'When local changes are detected, this software will',
+                        f'generate a conflict file.  You must open both projects',
+                        f'and copy all of your changes to the newly downloaded',
+                        f'project.',
+                        f'\n',
+                        f'\n',
+                        f'To prevent this from happening in the future, make sure',
+                        f'you always have the most up-to-date project BEFORE making',
+                        f'changes, and make sure you push your project to the cloud',
+                        f'as soon as you are finished!',
+                        f'\n',
+                        f'\n',
+                    ]
+                )
+                dialog.press_enter()
+
+                File.recursive_overwrite(
+                    src  = self.song,
+                    dest = self.yourversion
+                )
+
+        # Copy over song files
+        Folder.create(self._extracted_path())
+        File.recursive_overwrite(
+            src  = f'{self._temp_path()}/{self.song.name}',
+            dest = self.song
+        )
+        File.recursive_overwrite(
+            src  = f'{self._temp_path()}/{self.song.name}',
+            dest = self.song_original
+        )
+
+        # Copy over the rest
+        for path in glob(f"{self._temp_path()}/*"):
+            path   = Path(path)
+            result = True
+
+            if path.name == "Media":
+                result = Audio.folder_to_wav(
+                    folderpath  = path,
+                    destination = f'{self._extracted_path()}/Media/'
+                )
+                DummyFiles(f'{self._extracted_path()}/Media/')
+
+            elif path.name == "Bounces":
+                result = Audio.folder_to_wav(
+                    folderpath  = path,
+                    destination = f'{self._extracted_path()}/Bounces/'
+                )
+                DummyFiles(f'{self._extracted_path()}/Bounces/')
+
+            elif path.suffix == ".song":
+                pass  ## Ignore
+
+            else:
+                File.recursive_overwrite(path, f'{self.song.parent}/{path.name}')
+
+        if not result:
+            return False
+
+        Folder.clear_temp()
+
+        return True
+
+
     ## Private ##
     def _open_temp(self, quiet=False, wait=True):
         if not self.song_temp.exists():
             File.recursive_overwrite(self.song, self.song_temp)
 
-        Project._open_project(self.song_temp, quiet, wait)
+        self._open_project(self.song_temp, quiet, wait)
 
         if wait:
             self._close_temp()
@@ -169,23 +310,22 @@ class Project:
             File.recursive_overwrite(self.song_temp, self.song)
             File.delete(self.song_temp)
 
-    def _open_conflict(self, quiet=False, wait=True):
+    def _open_yourversion(self, quiet=False, wait=True):
         if not self.yourversion_temp.exists():
             File.recursive_overwrite(self.yourversion, self.yourversion_temp)
 
         if self.yourversion.exists():
-            Project._open_project(self.yourversion_temp, quiet, wait)
+            self._open_project(self.yourversion_temp, quiet, wait)
 
         if wait:
-            self._close_temp()
+            self._close_yourversion()
 
-    def _close_conflict(self):
+    def _close_yourversion(self):
         if not Dev.get("NO_OPEN_STUDIO_ONE"):
             File.recursive_overwrite(self.yourversion_temp, self.yourversion)
             File.delete(self.yourversion_temp)
 
-    def _open_temp_and_conflict(self):
-        Log("Opening Projects, please wait at least 30 seconds for both projects to open!", "notice")
+    def _open_temp_and_yourversion(self):
         Dialog(
             title = "Please Wait!",
             body  = [
@@ -195,14 +335,17 @@ class Project:
         )
         self._open_temp(quiet=True, wait=False)
         time.sleep(15)
-        self._open_conflict()
+        self._open_yourversion()
 
         # this needs to still be handled since self.open_temp cant wait
         self._close_temp()
 
-    ## Static / Private ##
-    def _open_project(filepath, quiet=False, wait=True):
+    def _open_project(self, filepath, quiet=False, wait=True):
         filepath = Path(filepath)
+
+        if not self.did_notify:
+            Slack(f'{Slack.get_nice_username()} is working on {Slack.make_nice_project_name(self.name)}', endpoint="dev")
+            self.did_notify = True
 
         if not quiet:
             Dialog(

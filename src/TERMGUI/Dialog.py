@@ -28,7 +28,7 @@ class Dialog:
         return ans
 
     def get_result(self, prompt=None):
-        return input(f'  {prompt}: ').lower()
+        return input(f'  {prompt}: ')
 
     def press_enter(self):
         Log.press_enter()

@@ -8,7 +8,7 @@ class Dev:
         return Dev.get("DEVELOPMENT")
 
     def get(key):
-        data = Dev.get_data()
+        data = Dev._get_data()
 
         if key in data:
             return data[key]
@@ -17,7 +17,9 @@ class Dev:
             File.set_json(Dev.filepath, data)
             return False
 
-    def get_data():
+    # PRIVATE
+
+    def _get_data():
         json_file = File.get_json(Dev.filepath)
 
         if not json_file:

@@ -1,5 +1,6 @@
 import sys
-from src.menus.open_project import open_project
+from src.menus.menu_open_project import menu_open_project
+from src.menus.menu_create_project import menu_create_project
 from src.TERMGUI.Menu import Menu
 from src.TERMGUI.Log import Log
 
@@ -8,11 +9,11 @@ def exit():
     # 1 = exit gracefully
     sys.exit(1)
 
-def main_menu():
+def menu_main():
     options = [
-        ["Open", open_project],
+        ["Open", menu_open_project],
+        ["New", menu_create_project],
         # ["Upload", ],
-        # ["New", ],
         # ["Advanced", ],
         ["Exit", exit],
     ]
@@ -25,4 +26,4 @@ def main_menu():
 
     options[menu.get_result()][1]()
 
-    main_menu()
+    menu_main()

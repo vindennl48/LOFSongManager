@@ -235,7 +235,6 @@ class Audio:
         destination = Path(destination)
         mp3s        = glob(f"{folderpath.absolute()}/*.mp3")
 
-        # Log(f'mp3s: "{mp3s}", folderpath: "{folderpath.absolute()}"', "warning")
         for mp3 in mp3s:
             if not Audio(mp3).to_wav(destination):
                 return False

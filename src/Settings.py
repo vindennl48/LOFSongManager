@@ -23,6 +23,10 @@ class Settings:
         Settings.create()
         return File.get_json_key(Settings.filepath.absolute(), key)
 
+    def get_all():
+        Settings.create()
+        return File.get_json(Settings.filepath.absolute())
+
     def set_version(version):
         Settings.set_key("version", str(version))
 
@@ -49,7 +53,7 @@ class Settings:
 
         Settings.set_key(
             "username",
-            dialog.get_result("Name")
+            dialog.get_result("Name").lower()
         )
 
     def get_username(capitalize=False):
