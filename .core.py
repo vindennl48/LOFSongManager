@@ -1,6 +1,8 @@
 from pathlib import Path
+from src.Slack import Slack
 from src.Update import Update
 from src.TERMGUI.Run import Run
+from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 
 def start_main_program():
@@ -11,9 +13,11 @@ def start_main_program():
 
         if ans == 0:
             # There was an error
-            pass
+            Slack.upload_log()
+            raise Exception("\n\nThere was an error.. Contact your administrator.\n\n")
 
     else:
+        Log(".main.py Does not exist!!", "warning")
         Dialog(
             title = "Fatal Error!",
             body  = [
@@ -27,6 +31,7 @@ def start_main_program():
             ],
             clear = False
         ).press_enter()
+        Slack.upload_log()
 
 
 ## MAIN FUNCTION

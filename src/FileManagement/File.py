@@ -51,6 +51,16 @@ class File(FileEdit):
 
         return [ file_stem, num, ext ]
 
+    def get(filepath):
+        filepath = Path(filepath)
+        result   = None
+
+        if filepath.exists():
+            with open(filepath.absolute()) as f:
+                result = f.read()
+
+        return result
+
 
     def get_json(filepath):
         filepath = Path(filepath)

@@ -2,6 +2,7 @@ import requests, json
 from src.Dev import Dev
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
+from src.FileManagement.File import File
 
 
 class Slack:
@@ -24,6 +25,11 @@ class Slack:
 
     def make_nice_project_name(name):
         return f'"{name.replace("_"," ")}"'
+
+    def upload_log():
+        log = File.get(Log.filepath)
+        Slack(f'{Settings.get_username(capitalize=True)} Log', "dev")
+        Slack(log, "dev")
 
     # PRIVATE
 

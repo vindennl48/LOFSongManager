@@ -14,8 +14,39 @@ if __name__ == "__main__":
     dialog = Dialog(
         title = "Upgrading to V1.2!",
         body  = [
-            f'This version updates a lot of the under-the-hood code to',
+            f'This version updates a LOT of the under-the-hood code to',
             f'help streamline the coding process.',
+            f'\n',
+            f'\n',
+            f'The main menu has changed!  Now, the "Open" option takes care',
+            f'of all of the upload and download tasks as well as conflicts.',
+            f'In the "Open" screen, there will be labels on the right side',
+            f'of the projects to tell you what the status is.',
+            f'\n',
+            f'\n',
+            f'    1) Pemi          - Update',
+            f'    2) Slough        - Dirty',
+            f'    3) Trenches      - Not Uploaded',
+            f'    4) HelloGoodbye  - New',
+            f'\n',
+            f'\n',
+            f'Update: There is a new project on the drive that will be downloaded',
+            f'        the next time you open.',
+            f'\n',
+            f'\n',
+            f'Dirty: You have changes that have not been uploaded to the cloud yet.',
+            f'\n',
+            f'\n',
+            f'Update (Conflict!): There is a new project on the drive but you also',
+            f'                    have non-uploaded changes.. This will create a',
+            f'                    conflict file that you will have to resolve.',
+            f'\n',
+            f'\n',
+            f'Not Uploaded: A project you created that does not exist yet on the',
+            f'              drive',
+            f'\n',
+            f'\n',
+            f'New: A project that exists on the drive but has not yet been downloaded.',
             f'\n',
             f'\n',
             f'For Developers:',
@@ -34,14 +65,22 @@ if __name__ == "__main__":
             f'Note:',
             f'\n',
             f'  This update requires a full restart of LOFSongManager.  When',
-            f'this update has completed, the software will shut down on its',
-            f'own.',
+            f'this update has completed, the software should shut down on its',
+            f'own.  If it does not, please restart the software.',
+            f'\n',
+            f'\n',
+            f'For more information, please refer to the repository commits.',
             f'\n',
             f'\n',
         ]
     )
+    dialog.press_enter()
 
     File.delete("development.py")
+    File.delete("compressed_songs/db.json")
+
+    # just to make sure we have the right ones
+    Settings.set_slack_endpoints()
 
     # 0 = there was a problem upgrading
     # 1 = do not restart core

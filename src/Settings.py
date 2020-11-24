@@ -1,5 +1,7 @@
 from decimal import Decimal
 from pathlib import Path
+from src.Drive import Drive
+from src.Slack import Slack
 from src.FileManagement.File import File
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
@@ -64,28 +66,35 @@ class Settings:
 
         return username
 
-    def set_slack_endpoints():
-        dialog = Dialog(
-            title = "Slack Integration Setup",
-            body = [
-                f'Enter the production and development webhook URLs to finish',
-                f'setting up Slack Integration.',
-                f'\n',
-                f'\n',
-                f'The URLs are listed in this link here, or you can find them',
-                f'in the "Sticky" document pinned to the #lofsongmanager Slack',
-                f'channel.',
-                f'\n',
-                f'\n',
-                f'=> https://drive.google.com/file/d/1xfqoWJN_bLi8E0f7n5eRbWxf1uDALKB7/view?usp=sharing',
-            ]
-        )
+    def check_slack_endpoints():
+        settings = Settings.get_all()
 
-        Settings.set_key(
-            "slack_endpoint_prod",
-            dialog.get_result("Production Endpoint URL")
-        )
-        Settings.set_key(
-            "slack_endpoint_dev",
-            dialog.get_result("Development Endpoint URL")
-        )
+        if not Slack.endpoints["prod"] in settings or \
+           not Slack.endpoints["dev"] in settings:
+            return False
+
+        if settings[Slack.endpoints["prod"]] == "" or \
+           settings[Slack.endpoints["dev"]] == "":
+            return False
+
+        return True
+
+    def set_slack_endpoints():
+        if not Settings.check_slack_endpoints():
+            Settings.set_key(
+                key  = Slack.endpoints["prod"],
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Slack.endpoints["prod"]
+                )
+            )
+
+            Settings.set_key(
+                key  = Slack.endpoints["dev"],
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Slack.endpoints["dev"]
+                )
+            )
