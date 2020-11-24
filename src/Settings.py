@@ -66,6 +66,11 @@ class Settings:
 
         return username
 
+    def reset_slack_endpoints():
+        Settings.set_key(Slack.endpoints["prod"], "")
+        Settings.set_key(Slack.endpoints["dev"], "")
+        Settings.set_slack_endpoints()
+
     def check_slack_endpoints():
         settings = Settings.get_all()
 

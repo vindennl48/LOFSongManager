@@ -80,7 +80,7 @@ if __name__ == "__main__":
     File.delete("compressed_songs/db.json")
 
     # just to make sure we have the right ones
-    Settings.set_slack_endpoints()
+    Settings.reset_slack_endpoints()
 
     # 0 = there was a problem upgrading
     # 1 = do not restart core

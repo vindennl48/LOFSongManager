@@ -66,6 +66,6 @@ class Update:
                 Settings.set_version(migration_version)
 
                 # Push a notification to Slack
-                # Slack(f'{Settings.get_user(capitalize=True)} has upgraded to V{migration_version}!')
+                Slack(f'{Settings.get_user(capitalize=True)} has upgraded to V{migration_version}!')
 
         return result
