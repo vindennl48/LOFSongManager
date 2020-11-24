@@ -24,6 +24,8 @@ def menu_main():
         back    = False
     )
 
-    options[menu.get_result()][1]()
+    if not options[menu.get_result()][1]():
+        if not Menu.notice:
+            Menu.notice = "An Error Has Occurred.."
 
     menu_main()

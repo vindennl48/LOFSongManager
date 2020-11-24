@@ -137,7 +137,7 @@ class Drive:
                 print(f"----> Uploaded {int(status.progress() * 100)}%", end="\r", flush=True)
 
         if file:
-            print("Uploaded successfully!")
+            print("      Uploaded successfully!")
             return True
         else:
             print(f'Failed to upload "{filepath.name}"!')

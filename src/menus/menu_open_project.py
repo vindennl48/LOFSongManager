@@ -17,4 +17,4 @@ def menu_open_project():
     if result == "back":
         return True
     else:
-        projects[result].open()
+        return projects[result].open()

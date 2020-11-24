@@ -11,6 +11,7 @@ from src.Tar import Tar
 from src.Slack import Slack
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Run import Run
+from src.TERMGUI.Menu import Menu
 from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
@@ -141,6 +142,17 @@ class Project:
 ## Opening Projects 
 ##################################################
     def open(self):
+        if not self._update():
+            dialog = Dialog(
+                title = "ERROR: Update Unsuccessful",
+                body  = [
+                    f'An error occurred when trying to update this project..',
+                    f'Please contact your administrator...',
+                ]
+            )
+            dialog.press_enter()
+            return False
+
         if self.is_dirty():
             dialog = Dialog(
                 title = "Local Changes Detected",
@@ -157,17 +169,6 @@ class Project:
                     Log("There was a problem uploading this project","warning")
                     return False
                 return True
-
-        if not self._update():
-            dialog = Dialog(
-                title = "ERROR: Update Unsuccessful",
-                body  = [
-                    f'An error occurred when trying to update this project..',
-                    f'Please contact your administrator...',
-                ]
-            )
-            dialog.press_enter()
-            return False
 
         if self.is_conflict():
             dialog = Dialog(
@@ -375,9 +376,6 @@ class Project:
             return False
         ##
 
-        Log("DEBUG: Checked for new version","warning")
-        Log.press_enter()
-
         # Check Existing Conflicts
         if self.is_conflict():
             dialog = Dialog(
@@ -408,13 +406,11 @@ class Project:
             if ans == "yes":
                 dialog.confirm()
             elif ans == "no":
+                Menu.notice = "Unresolved Conflict Exists"
                 return False
 
         self._clear_conflict()
         ##
-
-        Log("DEBUG: Checked existing conflicts","warning")
-        Log.press_enter()
 
         # Remove Unused Audio Files
         dialog = Dialog(
@@ -436,9 +432,6 @@ class Project:
             Log("Development Mode prevented 'Remove Unused Audio Files' from opening", "alert")
         ##
 
-        Log("DEBUG: Removed unused audio files","warning")
-        Log.press_enter()
-
         # Extract Cached Version
         Folder.clear_temp()
 
@@ -451,9 +444,6 @@ class Project:
             Folder.create(self._temp_path())
         ##
 
-        Log("DEBUG: Extracted cached version","warning")
-        Log.press_enter()
-
         # Copy over song files
         File.recursive_overwrite(
             src  = self.song,
@@ -464,9 +454,6 @@ class Project:
             dest = self.song_original
         )
         ##
-
-        Log("DEBUG: Copied over song files","warning")
-        Log.press_enter()
 
         # Copy over the rest
         for path in glob(f'{self._extracted_path()}/*'):
@@ -502,9 +489,6 @@ class Project:
                 return False
         ##
 
-        Log("DEBUG: Copied over the rest","warning")
-        Log.press_enter()
-
         # Compress and Upload Project
         Tar.compress(
             folderpath  = self._temp_path(),
@@ -523,16 +507,10 @@ class Project:
             return False
         ##
 
-        Log("DEBUG: Compressed and Uploaded","warning")
-        Log.press_enter()
-
         # Set New Hash
         if not self.hash.push():
             return False
         ##
-
-        Log(f'DEBUG: Set new hash, "{self.hash.hash}"',"warning")
-        Log.press_enter()
 
         # Cleanup
         Folder.clear_temp()
@@ -541,7 +519,7 @@ class Project:
 
         Log("Compression and upload complete!", "notice")
 
-        Log.press_enter()
+        Menu.notice = "Successful Upload!"
 
         return True
 

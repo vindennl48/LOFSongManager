@@ -4,6 +4,9 @@ from src.TERMGUI.Term import Term
 from src.TERMGUI.Log import Log
 
 class Menu:
+
+    notice = None
+
     def __init__(self, title, options, back=True):
         self.title   = title
         self.options = options
@@ -18,7 +21,15 @@ class Menu:
             self.create_options(self.options),
         ]
 
+        if Menu.notice:
+            self.stack.insert(1, self.create_notice())
+
         return self
+
+    def create_notice(self):
+        result      = f' > > {Menu.notice}'
+        Menu.notice = None
+        return result
 
     def show(self, stack, clear=True):
         if clear:
