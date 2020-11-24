@@ -14,7 +14,7 @@ class Settings:
 
     def create():
         if not Settings.filepath.exists():
-            File.set_json(Settings.filepath, {})
+            File.set_json(Settings.filepath.absolute(), {})
             Settings.set_username()
             Settings.set_version("0.0")
             Settings.set_slack_endpoints()
@@ -30,6 +30,10 @@ class Settings:
     def get_all():
         Settings.create()
         return File.get_json(Settings.filepath.absolute())
+
+    def set_all(data):
+        Settings.create()
+        return File.set_json(Settings.filepath.absolute(), data)
 
     def set_version(version):
         Settings.set_key("version", str(version))

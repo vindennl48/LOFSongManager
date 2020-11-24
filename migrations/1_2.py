@@ -80,6 +80,9 @@ if __name__ == "__main__":
     File.delete("development.py")
     File.delete("compressed_songs/db.json")
 
+    # Change 'user' key to 'username' in settings
+    Settings.set_key( "username", Settings.get_key("user") )
+
     # just to make sure we have the right ones
     Settings.reset_slack_endpoints()
 
