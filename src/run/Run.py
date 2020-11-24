@@ -31,8 +31,8 @@ class Run:
         if not alias in Run.alias:
             raise Exception("Alias is not in Run.alias list!")
 
-        alias = Run.alias[alias][Run.get_system()]
         wait  = Run.alias["wait"][Run.get_system()] if alias == "open" and wait else ""
+        alias = Run.alias[alias][Run.get_system()]
 
         if useSubprocess:
             return subprocess.call(f"{alias} {wait} {command}", shell=True)
