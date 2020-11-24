@@ -7,8 +7,8 @@ parentdir  = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 ##########################################
 
-from src.File import File
 from src.TERMGUI.Dialog import Dialog
+from src.FileManagement.File import File
 
 if __name__ == "__main__":
     dialog = Dialog(
