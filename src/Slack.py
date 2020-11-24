@@ -11,11 +11,6 @@ class Slack:
         "Content-Type": "application/json"
     }
 
-    endpoints = {
-        "dev":  "slack_endpoint_dev",
-        "prod": "slack_endpoint_prod",
-    }
-
     def __init__(self, text, endpoint="prod"):
         endpoint = "dev" if Dev.isDev() else endpoint
         self._send_notification(text, endpoint)
@@ -48,4 +43,7 @@ class Slack:
         Log("Slack Notification Sent!")
 
     def _get_endpoint_key(self, endpoint):
-        return Settings.get_key(Slack.endpoints[endpoint])
+        if endpoint == "dev":
+            return Settings.get_key(Settings.slack_dev_key)
+        elif endpoint == "prod":
+            return Settings.get_key(Settings.slack_prod_key)

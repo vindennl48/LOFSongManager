@@ -12,7 +12,7 @@ def exit():
 
 def menu_main():
     options = [
-        ["Open", menu_open_projectt],
+        ["Open", menu_open_project],
         ["New", menu_create_project],
         # ["Upload", ],
         # ["Advanced", ],

@@ -1,5 +1,6 @@
 import sys
 from src.Slack import Slack
+from src.Update import Update
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
 from src.FileManagement.Folder import Folder
@@ -16,6 +17,9 @@ if __name__ == '__main__':
 
     # Create settings file if it doesn't exist
     Settings.create()
+
+    # Check version
+    Update.check_version()
 
     # Start main menu
     try:

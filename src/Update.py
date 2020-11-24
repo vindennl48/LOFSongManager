@@ -17,7 +17,11 @@ class Update:
         Update.pull_updates_from_git()
         result = Update.run_migrations()
 
+        return result
+
+    def check_version():
         if Decimal(VERSION) != Settings.get_version():
+            Log(f'env-Version: {Decimal(VERSION)} | Settings-Version: {Settings.get_version()}',"warning")
             Dialog(
                 title = "Version Mismatch!",
                 body  = [
@@ -32,8 +36,6 @@ class Update:
                 clear = False
             )
             Log.press_enter()
-
-        return result
 
     def pull_updates_from_git():
         Run.prg("git", "pull --rebase")
