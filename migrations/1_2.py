@@ -7,6 +7,7 @@ parentdir  = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 ##########################################
 
+from src.Settings import Settings
 from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
 
@@ -24,26 +25,26 @@ if __name__ == "__main__":
             f'of the projects to tell you what the status is.',
             f'\n',
             f'\n',
-            f'    1) Pemi          - Update',
-            f'    2) Slough        - Dirty',
-            f'    3) Trenches      - Not Uploaded',
+            f'    1) Pemi          - Update',       f'\n',
+            f'    2) Slough        - Dirty',        f'\n',
+            f'    3) Trenches      - Not Uploaded', f'\n',
             f'    4) HelloGoodbye  - New',
             f'\n',
             f'\n',
             f'Update: There is a new project on the drive that will be downloaded',
-            f'        the next time you open.',
+            f'the next time you open.',
             f'\n',
             f'\n',
             f'Dirty: You have changes that have not been uploaded to the cloud yet.',
             f'\n',
             f'\n',
             f'Update (Conflict!): There is a new project on the drive but you also',
-            f'                    have non-uploaded changes.. This will create a',
-            f'                    conflict file that you will have to resolve.',
+            f'have non-uploaded changes.. This will create a conflict file that you',
+            f'will have to resolve.',
             f'\n',
             f'\n',
             f'Not Uploaded: A project you created that does not exist yet on the',
-            f'              drive',
+            f'drive',
             f'\n',
             f'\n',
             f'New: A project that exists on the drive but has not yet been downloaded.',
