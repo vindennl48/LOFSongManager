@@ -1,7 +1,9 @@
 import os, io, pickle, shutil
 from pathlib import Path
-from src.FileManagement.File import File
+from src.Dev import Dev
+from src.TERMGUI.Log import Log
 from src.env import LOFSM_DIR_HASH
+from src.FileManagement.File import File
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -84,6 +86,10 @@ class Drive:
         }).execute()
 
     def upload(self, filepath, mimeType, parents=[LOFSM_DIR_HASH]):
+        if Dev.get("NO_UPLOAD"):
+            Log("Dev Mode prevented 'Drive.upload' function","notice")
+            return True
+
         filepath = Path(filepath)
         file     = None
 
@@ -138,6 +144,10 @@ class Drive:
             return False
 
     def download(self, ID, save_path):
+        if Dev.get("NO_DOWNLOAD"):
+            Log("Dev Mode prevented 'Drive.download' function","notice")
+            return True
+
         save_path  = Path(save_path)
         request    = self.service.files().get_media(fileId=ID)
         fh         = io.BytesIO()

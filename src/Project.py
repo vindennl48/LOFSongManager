@@ -38,7 +38,8 @@ class Project:
         self.compressed       = Path(f'{self._compressed_path()}/{name}.lof')
         self.remote           = f'{LOFSM_DIR_PATH}/{self.name}.lof'
         self.hash             = Hash(self.compressed)
-        self.dummy            = DummyFiles(f'{self._extracted_path()}')
+        self.dummy_media      = DummyFiles(f'{self._extracted_path()}/Media')
+        self.dummy_bounces    = DummyFiles(f'{self._extracted_path()}/Bounces')
         self.did_notify       = False
         self.drive            = Drive()
 
@@ -46,6 +47,9 @@ class Project:
         if self.song.exists() and self.song_original.exists():
             return not filecmp.cmp(self.song.absolute(), self.song_original.absolute(), shallow=False)
         return False
+
+    def is_conflict(self):
+        return self.yourversion.exists()
 
     def is_recent(self):
         return self.hash.compare()
@@ -71,19 +75,28 @@ class Project:
             "dirty":           "- Dirty",
         }
 
-        if not self.is_cached():
-            if self.is_remote():
-                result.append(flags["new"])
-            else:
-                result.append(flags["not_uploaded"])
 
-        elif not self.is_recent() and self.is_remote():
-            if self.is_dirty():
-                result.append(flags["update_conflict"])
-            else:
-                result.append(flags["update"])
+        '''
+        *update          = is_remote, is_cached, not is_recent, not is_dirty
+        *update_conflict = is_remote, is_cached, not is_recent, is_dirty
+        new             = is_remote, not is_cached
+        not_uploaded    = not is_remote
+        dirty           = is_dirty
+        '''
 
-        elif self.is_dirty():
+        if self.is_remote():
+            if not self.is_recent():
+                if self.is_cached():
+                    if self.is_dirty():
+                        result.append(flags["update_conflict"])
+                    else:
+                        result.append(flags["update"])
+                else:
+                    result.append(flags["new"])
+        else:
+            result.append(flags["not_uploaded"])
+
+        if self.is_dirty():
             result.append(flags["dirty"])
 
         return " ".join(result)
@@ -128,11 +141,35 @@ class Project:
 ## Opening Projects 
 ##################################################
     def open(self):
+        if self.is_dirty():
+            dialog = Dialog(
+                title = "Local Changes Detected",
+                body = [
+                    f'You have local changes that have not yet been',
+                    f'uploaded to the cloud.  Would you like to upload',
+                    f'those changes now?',
+                ]
+            )
+            ans = dialog.get_mult_choice(["y","n"])
+
+            if ans == "y":
+                if not self._upload():
+                    Log("There was a problem uploading this project","warning")
+                    return False
+                return True
 
         if not self._update():
+            dialog = Dialog(
+                title = "ERROR: Update Unsuccessful",
+                body  = [
+                    f'An error occurred when trying to update this project..',
+                    f'Please contact your administrator...',
+                ]
+            )
+            dialog.press_enter()
             return False
 
-        if self.yourversion.exists():
+        if self.is_conflict():
             dialog = Dialog(
                 title = "A Conflict Exists in This Project!",
                 body  = [
@@ -167,14 +204,33 @@ class Project:
         else:
             self._open_temp()
 
+        if self.is_dirty():
+            dialog = Dialog(
+                title = "Local Changes Detected",
+                body = [
+                    f'You have local changes that have not yet been',
+                    f'uploaded to the cloud.  Would you like to upload',
+                    f'those changes now?',
+                ]
+            )
+            ans = dialog.get_mult_choice(["y","n"])
+
+            if ans == "y":
+                if not self._upload():
+                    Log("There was a problem uploading this project","warning")
+                    return False
+                return True
+
         return True
 
+
+    ## Private ##
     def _update(self):
         if not self.is_recent() and self.is_remote():
             if self.song.exists():
                 Log("Update available!", "notice")
 
-            if self.yourversion.exists():
+            if self.is_conflict():
                 dialog = Dialog(
                     title = "A Conflict Still Exists!",
                     body  = [
@@ -194,7 +250,7 @@ class Project:
                     ], clear=False
                 )
 
-                ans = dialog.get_mult_choice("y","n")
+                ans = dialog.get_mult_choice(["y","n"])
 
                 if ans == "n":
                     return False
@@ -213,7 +269,8 @@ class Project:
                 Log.press_enter()
                 return False
 
-            self._unpack()
+            if not self._unpack():
+                return False
 
         return True
 
@@ -225,31 +282,31 @@ class Project:
             destination = Project.temp_parent
         )
 
-        if self.song.exists() and self.song_original.exists():
-            if not filecmp.cmp(self.song, self.song_original, shallow=False):
-                dialog = Dialog(
-                    title = "Local changes found!",
-                    body  = [
-                        f'When local changes are detected, this software will',
-                        f'generate a conflict file.  You must open both projects',
-                        f'and copy all of your changes to the newly downloaded',
-                        f'project.',
-                        f'\n',
-                        f'\n',
-                        f'To prevent this from happening in the future, make sure',
-                        f'you always have the most up-to-date project BEFORE making',
-                        f'changes, and make sure you push your project to the cloud',
-                        f'as soon as you are finished!',
-                        f'\n',
-                        f'\n',
-                    ]
-                )
-                dialog.press_enter()
+        if self.is_dirty():
+            dialog = Dialog(
+                title = "Local changes found!",
+                body  = [
+                    f'When local changes are detected, this software will',
+                    f'generate a conflict file.  You must open both projects',
+                    f'and copy all of your changes to the newly downloaded',
+                    f'project.',
+                    f'\n',
+                    f'\n',
+                    f'To prevent this from happening in the future, make sure',
+                    f'you always have the most up-to-date project BEFORE making',
+                    f'changes, and make sure you push your project to the cloud',
+                    f'as soon as you are finished!',
+                    f'\n',
+                    f'\n',
+                ]
+            )
+            dialog.press_enter()
 
-                File.recursive_overwrite(
-                    src  = self.song,
-                    dest = self.yourversion
-                )
+            File.recursive_overwrite(
+                src  = self.song,
+                dest = self.yourversion
+            )
+        ##
 
         # Copy over song files
         Folder.create(self._extracted_path())
@@ -261,9 +318,10 @@ class Project:
             src  = f'{self._temp_path()}/{self.song.name}',
             dest = self.song_original
         )
+        ##
 
         # Copy over the rest
-        for path in glob(f"{self._temp_path()}/*"):
+        for path in glob(f'{self._temp_path()}/*'):
             path   = Path(path)
             result = True
 
@@ -272,30 +330,221 @@ class Project:
                     folderpath  = path,
                     destination = f'{self._extracted_path()}/Media/'
                 )
-                DummyFiles(f'{self._extracted_path()}/Media/')
+                self.dummy_media.create()
 
             elif path.name == "Bounces":
                 result = Audio.folder_to_wav(
                     folderpath  = path,
                     destination = f'{self._extracted_path()}/Bounces/'
                 )
-                DummyFiles(f'{self._extracted_path()}/Bounces/')
+                self.dummy_bounces.create()
 
             elif path.suffix == ".song":
                 pass  ## Ignore
-
+            elif path.name == "History":
+                pass  ## Ignore
             else:
                 File.recursive_overwrite(path, f'{self.song.parent}/{path.name}')
 
-        if not result:
-            return False
+            if not result:
+                return False
+        ##
 
         Folder.clear_temp()
 
         return True
 
+    def _upload(self):
+        if not self.is_dirty():
+            return True
 
-    ## Private ##
+        # Check For Newer Version
+        if self.is_remote() and not self.is_recent():
+            dialog = Dialog(
+                title = "A Newer Version Exists!",
+                body  = [
+                    f'You can not upload a project when your version',
+                    f'is older!',
+                    f'\n',
+                    f'\n',
+                    f'You must download the newest version from the cloud',
+                    f'and merge the two projects before uploading.',
+                ]
+            )
+            dialog.press_enter()
+            return False
+        ##
+
+        Log("DEBUG: Checked for new version","warning")
+        Log.press_enter()
+
+        # Check Existing Conflicts
+        if self.is_conflict():
+            dialog = Dialog(
+                title = "WARNING: You still have existing conflicts!",
+                body  = [
+                    f'A conflict has still been detected!  This happens when',
+                    f'a new version of a project gets uploaded by someone else',
+                    f'before you had the chance to upload your local changes.',
+                    f'If these conflicts do not get resolved before you upload,',
+                    f'you will lose all your local changes!',
+                    f'\n',
+                    f'\n',
+                    f'If you have ALREADY resolved these conflicts, then continue..',
+                    f'\n',
+                    f'\n',
+                    f'If you have NOT yet resolved these conflicts, go back and',
+                    f'resolve conflicts before continuing!',
+                    f'\n',
+                    f'\n',
+                    f'AGAIN, if you do not resolve theses conflicts before continuing,',
+                    f'you will lose all your local changes!',
+                    f'\n',
+                    f'\n',
+                ]
+            )
+            ans = dialog.get_mult_choice(["yes","no"])
+
+            if ans == "yes":
+                dialog.confirm()
+            elif ans == "no":
+                return False
+
+        self._clear_conflict()
+        ##
+
+        Log("DEBUG: Checked existing conflicts","warning")
+        Log.press_enter()
+
+        # Remove Unused Audio Files
+        dialog = Dialog(
+            title = "Remove Unused Audio Files",
+            body  = [
+                f'Studio One will open and allow you to remove',
+                f'unused audio files from the pool.',
+                f'\n',
+                f'\n',
+                f'DO NOT FORGET to check the box that says to ',
+                f'"Delete Files Permanently"!',
+            ]
+        )
+        dialog.press_enter()
+
+        if not Dev.get("NO_REMOVE_UNUSED"):
+            self._open_temp()
+        else:
+            Log("Development Mode prevented 'Remove Unused Audio Files' from opening", "alert")
+        ##
+
+        Log("DEBUG: Removed unused audio files","warning")
+        Log.press_enter()
+
+        # Extract Cached Version
+        Folder.clear_temp()
+
+        if self.is_cached():
+            Tar.extract(
+                filepath    = self.compressed,
+                destination = Project.temp_parent
+            )
+        else:
+            Folder.create(self._temp_path())
+        ##
+
+        Log("DEBUG: Extracted cached version","warning")
+        Log.press_enter()
+
+        # Copy over song files
+        File.recursive_overwrite(
+            src  = self.song,
+            dest = f'{self._temp_path()}/{self.song.name}'
+        )
+        File.recursive_overwrite(
+            src  = self.song,
+            dest = self.song_original
+        )
+        ##
+
+        Log("DEBUG: Copied over song files","warning")
+        Log.press_enter()
+
+        # Copy over the rest
+        for path in glob(f'{self._extracted_path()}/*'):
+            path   = Path(path)
+            result = True
+
+            if path.name == "Media":
+                self.dummy_media.remove()
+                result = Audio.folder_to_mp3(
+                    folderpath  = path,
+                    destination = f'{self._temp_path()}/Media'
+                )
+                self.dummy_media.create()
+
+            elif path.name == "Bounces":
+                self.dummy_bounces.remove()
+                result = Audio.folder_to_mp3(
+                    folderpath  = path,
+                    destination = f'{self._temp_path()}/Bounces'
+                )
+                self.dummy_bounces.create()
+
+            elif path.name == "History":
+                pass ## Ignore
+            elif path.name == "Cache":
+                pass ## Ignore
+            elif path.suffix == ".song":
+                pass ## Ignore
+            else:
+                File.recursive_overwrite(path, f'{self._temp_path()}/{path.name}')
+
+            if not result:
+                return False
+        ##
+
+        Log("DEBUG: Copied over the rest","warning")
+        Log.press_enter()
+
+        # Compress and Upload Project
+        Tar.compress(
+            folderpath  = self._temp_path(),
+            destination = self.compressed
+        )
+        Log("Uploading.. please be patient", "notice")
+
+        result = self.drive.upload(
+            filepath = self.compressed,
+            mimeType = Drive.mimeType['zip'],
+        )
+
+        if not result:
+            Log("Drive upload could not complete..", "warning")
+            Log.press_enter()
+            return False
+        ##
+
+        Log("DEBUG: Compressed and Uploaded","warning")
+        Log.press_enter()
+
+        # Set New Hash
+        if not self.hash.push():
+            return False
+        ##
+
+        Log(f'DEBUG: Set new hash, "{self.hash.hash}"',"warning")
+        Log.press_enter()
+
+        # Cleanup
+        Folder.clear_temp()
+
+        Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.name)}')
+
+        Log("Compression and upload complete!", "notice")
+
+        Log.press_enter()
+
+        return True
+
     def _open_temp(self, quiet=False, wait=True):
         if not self.song_temp.exists():
             File.recursive_overwrite(self.song, self.song_temp)
@@ -314,7 +563,7 @@ class Project:
         if not self.yourversion_temp.exists():
             File.recursive_overwrite(self.yourversion, self.yourversion_temp)
 
-        if self.yourversion.exists():
+        if self.is_conflict():
             self._open_project(self.yourversion_temp, quiet, wait)
 
         if wait:

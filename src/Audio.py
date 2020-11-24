@@ -131,6 +131,7 @@ class Audio:
         wav         = self.filepath
         mp3         = Path(f'{folderpath.absolute()}/{wav.stem}.mp3')
         dummy_files = DummyFiles(wav.parent)
+        dummy_list  = dummy_files.get_list()
         username    = Settings.get_username()
 
         if "_old" in wav.name:
@@ -147,7 +148,8 @@ class Audio:
             ).press_enter()
             return False
 
-        if wav.name in dummy_files.get_list():
+        # Don't upload dummy files
+        if wav.name in dummy_list:
             return True
 
         if not mp3.is_file():

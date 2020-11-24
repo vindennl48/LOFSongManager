@@ -41,6 +41,9 @@ class DummyFiles:
         return [ Path(x).name for x in wavs ]
 
     def create(self):
+        # Just make sure theres no dummy files first
+        self.remove()
+
         wavs      = self.get_wav_files()
         json_file = self.get_dummy_data()
 
@@ -68,10 +71,9 @@ class DummyFiles:
 
         self.set_dummy_data(json_file)
 
-    def remove(self):
-        if not self.exists():
-            self.create()
+        return self
 
+    def remove(self):
         json_file = self.get_dummy_data()
 
         for file in json_file['dummy']:

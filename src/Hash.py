@@ -16,23 +16,10 @@ class Hash:
         self.hash     = Hash.hash_file(filepath)
         self.drive    = Drive()
 
-    def hash_file(filepath):
-        filepath   = Path(filepath)
-        BLOCK_SIZE = 1024*1024
-        result     = hashlib.sha256()
-
-        if not filepath.exists():
-            return None
-
-        with open(filepath.absolute(), 'rb') as f:
-            fb = f.read(BLOCK_SIZE)
-            while len(fb) > 0:
-                result.update(fb)
-                fb = f.read(BLOCK_SIZE)
-
-        return result.hexdigest()
-
     def push(self):
+        # Make sure hash is up-to-date
+        self._re_hash()
+
         # You must check this function during use!
         if not self.hash:
             Log(f'Can not push hash for "{self.filepath.name}"!', "warning")
@@ -61,6 +48,9 @@ class Hash:
         return True
 
     def compare(self):
+        if not self.hash:
+            return False
+
         remote_hash = self.drive.get_json_key(
             remote_file    = self.remote_db_fpath,
             local_filepath = self.temp_db_fpath,
@@ -71,3 +61,25 @@ class Hash:
             return False
 
         return True
+
+    # Static
+    def hash_file(filepath):
+        filepath   = Path(filepath)
+        BLOCK_SIZE = 1024*1024
+        result     = hashlib.sha256()
+
+        if not filepath.exists():
+            return None
+
+        with open(filepath.absolute(), 'rb') as f:
+            fb = f.read(BLOCK_SIZE)
+            while len(fb) > 0:
+                result.update(fb)
+                fb = f.read(BLOCK_SIZE)
+
+        return result.hexdigest()
+
+    # Private
+    def _re_hash(self):
+        self.hash = Hash.hash_file(self.filepath)
+

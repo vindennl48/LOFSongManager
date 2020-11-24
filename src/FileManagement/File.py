@@ -26,7 +26,7 @@ class File(FileEdit):
             Log(f'Copying "{src.name}" to "{dest.name}"..')
             if dest.exists():
                 if not filecmp.cmp(src.absolute(), dest.absolute(), shallow=False):
-                    Log(f'Older duplicate found! Overwriting file "{dest.name}"', "blank")
+                    Log(f'Older duplicate found! Overwriting file "{dest.name}"', "sub")
                 else:
                     Log(f'Keeping original file "{dest.name}"', "sub")
                     return False

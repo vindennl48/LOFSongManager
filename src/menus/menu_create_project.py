@@ -23,11 +23,13 @@ def menu_create_project():
         name = dialog.get_result("Name")
         name = name.replace(" ", "_").lower()
 
-        template = Path('templates/template_01.song')
-        new_song = Path(f'extracted_songs/{name}/{name}.song')
+        template          = Path('templates/template_01.song')
+        new_song          = Path(f'extracted_songs/{name}/{name}.song')
+        new_song_original = Path(f'extracted_songs/{name}/{name}_original.song')
 
         Folder.create(new_song.parent)
         File.recursive_overwrite(template, new_song)
+        File.recursive_overwrite(template, new_song_original)
 
         Log(f'New song "{Slack.make_nice_project_name(name)}" created!', "notice")
         Log.press_enter()
