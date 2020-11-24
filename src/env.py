@@ -1,4 +1,4 @@
-from src.Dev import Dev
+from src.dev import Dev
 
 LOFSM_DIR_PATH = "Audio/LOFSongManager"
 LOFSM_DIR_HASH = "1DEMYiL1aiRJYjf_B3QyKkUbow4xqNaJQ"

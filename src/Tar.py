@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from src.Dev import Dev
+from src.dev import Dev
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 

@@ -1,5 +1,5 @@
 import requests, json
-from src.Dev import Dev
+from src.dev import Dev
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
