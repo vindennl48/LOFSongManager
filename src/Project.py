@@ -444,17 +444,6 @@ class Project:
             Folder.create(self._temp_path())
         ##
 
-        # Copy over song files
-        File.recursive_overwrite(
-            src  = self.song,
-            dest = f'{self._temp_path()}/{self.song.name}'
-        )
-        File.recursive_overwrite(
-            src  = self.song,
-            dest = self.song_original
-        )
-        ##
-
         # Copy over the rest
         for path in glob(f'{self._extracted_path()}/*'):
             path   = Path(path)
@@ -487,6 +476,18 @@ class Project:
 
             if not result:
                 return False
+        ##
+
+        # Copy over song files
+        File.recursive_overwrite(
+            src  = self.song,
+            dest = f'{self._temp_path()}/{self.song.name}'
+        )
+        # We want this last incase there are any errors above
+        File.recursive_overwrite(
+            src  = self.song,
+            dest = self.song_original
+        )
         ##
 
         # Compress and Upload Project
