@@ -1,32 +1,48 @@
-import json
 from glob import glob
 from decimal import Decimal
 from pathlib import Path
-from src.helpers import pause
-from src.dev import dev
-from src.run.Run import Run
-from src.settings.Settings import Settings
+from src.dev import Dev
+from src.TERMGUI.Run import Run
+from src.TERMGUI.Log import Log
+from src.TERMGUI.Dialog import Dialog
+from src.Settings import Settings
 from src.env import VERSION
-from src.slack.notify import Notify as Slack
+# from src.slack.notify import Notify as Slack
 
 class Update:
     def run():
+        if Dev.get("DO_NOT_UPDATE"):
+            return True
+
         Update.pull_updates_from_git()
         result = Update.run_migrations()
 
-        if Decimal(VERSION) != Settings.get_version():
-            print("\n\n 'src.env.VERSION' does not match the current version!")
-            print(" Please notify your administrator! \n\n")
-            pause()
-
         return result
+
+    def check_version():
+        if Decimal(VERSION) != Settings.get_version():
+            Log(f'env-Version: {Decimal(VERSION)} | Settings-Version: {Settings.get_version()}',"warning")
+            Dialog(
+                title = "Version Mismatch!",
+                body  = [
+                    f'src.env.VERSION does not match the current version!',
+                    f'The version number was not updated properly.',
+                    f'\n',
+                    f'\n',
+                    f'Please notify your administrator!',
+                    f'\n',
+                    f'\n',
+                ],
+                clear = False
+            )
+            Log.press_enter()
 
     def pull_updates_from_git():
         Run.prg("git", "pull --rebase")
 
     def install_pip_packages():
         Run.prg("pip", "install -r requirements.txt")
-        if dev("DEVELOPMENT"):
+        if Dev.isDev():
             Run.prg("pip", "freeze > requirements.txt")
 
     def run_migrations():

@@ -1,14 +1,33 @@
-def dev(name):
-    try:
-        import development
+from src.FileManagement.File import File
 
-        if not development.DEVELOPMENT:
+class Dev:
+
+    filepath = ".dev"
+
+    def isDev():
+        return Dev.get("DEVELOPMENT")
+
+    def get(key):
+        data = Dev._get_data()
+
+        if key in data:
+            return data[key]
+        else:
+            data[key] = False
+            File.set_json(Dev.filepath, data)
             return False
 
-        if name == "DEVELOPMENT":
-            return development.DEVELOPMENT
+    # PRIVATE
 
-        return development.flags[name]
+    def _get_data():
+        json_file = File.get_json(Dev.filepath)
 
-    except:
-        return False
+        if not json_file:
+            json_file = { "DEVELOPMENT": False, }
+
+            File.set_json(
+                filepath = Dev.filepath,
+                data     = json_file
+            )
+
+        return json_file

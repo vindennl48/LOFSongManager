@@ -1,15 +1,37 @@
 from pathlib import Path
-from src.update.Update import Update
-from src.run.Run import Run
-from src.helpers import pause
+from src.Slack import Slack
+from src.Update import Update
+from src.TERMGUI.Run import Run
+from src.TERMGUI.Log import Log
+from src.TERMGUI.Dialog import Dialog
 
 def start_main_program():
     main = Path(".main.py")
 
     if main.exists():
-        Run.prg("python", f'"{main.absolute()}"')
+        ans = Run.prg("python", f'"{main.absolute()}"', useSubprocess=True)
+
+        if ans == 0:
+            # There was an error
+            Slack.upload_log()
+            raise Exception("\n\nThere was an error.. Contact your administrator.\n\n")
+
     else:
-        raise Exception(f'"{main.absolute()}" doesnt exist!.. Something went terribly wrong..')
+        Log(".main.py Does not exist!!", "warning")
+        Dialog(
+            title = "Fatal Error!",
+            body  = [
+                f'"{main.absolute()}" doesnt exist!',
+                f'\n',
+                f'\n',
+                f'Something went terribly wrong.. Contact your',
+                f'administrator.',
+                f'\n',
+                f'\n',
+            ],
+            clear = False
+        ).press_enter()
+        Slack.upload_log()
 
 
 ## MAIN FUNCTION
