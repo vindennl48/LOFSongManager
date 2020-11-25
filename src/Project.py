@@ -570,9 +570,9 @@ class Project:
     def _open_project(self, filepath, quiet=False, wait=True):
         filepath = Path(filepath)
 
-        if not self.did_notify:
-            Slack(f'{Slack.get_nice_username()} is working on {Slack.make_nice_project_name(self.name)}', endpoint="dev")
-            self.did_notify = True
+        # if not self.did_notify:
+            # Slack(f'{Slack.get_nice_username()} is working on {Slack.make_nice_project_name(self.name)}', endpoint="dev")
+            # self.did_notify = True
 
         if not quiet:
             Dialog(
