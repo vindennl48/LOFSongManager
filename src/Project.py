@@ -426,14 +426,18 @@ class Project:
                 f'\n',
                 f'DO NOT FORGET to check the box that says to ',
                 f'"Delete Files Permanently"!',
+                f'\n',
+                f'\n',
+                f'NOT Advised but... Press "n" at the next prompt',
+                f'if you want to skip this.',
             ]
         )
-        dialog.press_enter()
 
-        if not Dev.get("NO_REMOVE_UNUSED"):
-            self._open_temp()
-        else:
-            Log("Development Mode prevented 'Remove Unused Audio Files' from opening", "alert")
+        if dialog.get_mult_choice(["y","n"]) == "y":
+            if not Dev.get("NO_REMOVE_UNUSED"):
+                self._open_temp()
+            else:
+                Log("Development Mode prevented 'Remove Unused Audio Files' from opening", "alert")
         ##
 
         # Extract Cached Version
