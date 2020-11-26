@@ -176,10 +176,6 @@ class Drive:
             fileId = ID
         ).execute()
 
-        Log(f'Delete result: "{result}"')
-        Log.press_enter()
-
-
     def get_json(self, remote_file, local_filepath):
         # remote_file    = cloud ID or cloud filepath
         # local_filepath = place to save the json file temporarily
