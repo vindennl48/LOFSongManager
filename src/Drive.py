@@ -171,6 +171,15 @@ class Drive:
             return True
         return False
 
+    def delete(self, ID):
+        result = self.service.files().delete(
+            fileId = ID
+        ).execute()
+
+        Log(f'Delete result: "{result}"')
+        Log.press_enter()
+
+
     def get_json(self, remote_file, local_filepath):
         # remote_file    = cloud ID or cloud filepath
         # local_filepath = place to save the json file temporarily
@@ -210,3 +219,9 @@ class Drive:
         self.get_json(remote_file, local_filepath)
         File.set_json_key(local_filepath, key, data)
         self.set_json(local_filepath, parents)
+
+    def remove_json_key(self, remote_file, local_filepath, key, parents=[LOFSM_DIR_HASH]):
+        self.get_json(remote_file, local_filepath)
+        File.remove_json_key(local_filepath, key)
+        self.set_json(local_filepath, parents)
+

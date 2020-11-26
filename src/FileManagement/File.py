@@ -88,3 +88,8 @@ class File(FileEdit):
         if not key in json_file:
             return None
         return json_file[key]
+
+    def remove_json_key(filepath, key):
+        json_file = File.get_json(filepath)
+        json_file.pop(key, None)
+        File.set_json(filepath, json_file)

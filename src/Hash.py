@@ -16,6 +16,13 @@ class Hash:
         self.hash     = Hash.hash_file(filepath)
         self.drive    = Drive()
 
+    def remove(self):
+        self.drive.remove_json_key(
+            remote_file    = Hash.remote_db_fpath,
+            local_filepath = Hash.temp_db_fpath,
+            key            = self.filepath.name
+        )
+
     def push(self):
         # Make sure hash is up-to-date
         self._re_hash()

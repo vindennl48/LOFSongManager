@@ -4,6 +4,7 @@ from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
 from src.menus.menu_open_project import menu_open_project
 from src.menus.menu_create_project import menu_create_project
+from src.menus.menu_delete_project import menu_delete_project
 
 def exit():
     # 0 = there was a problem
@@ -12,11 +13,11 @@ def exit():
 
 def menu_main():
     options = [
-        ["Open", menu_open_project],
-        ["New", menu_create_project],
-        # ["Upload", ],
+        ["Open",       menu_open_project],
+        ["New",        menu_create_project],
+        ["Delete",     menu_delete_project],
         # ["Advanced", ],
-        ["Exit", exit],
+        ["Exit",       exit],
     ]
 
     menu = Menu(

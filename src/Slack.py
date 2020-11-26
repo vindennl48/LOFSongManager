@@ -11,9 +11,9 @@ class Slack:
         "Content-Type": "application/json"
     }
 
-    def __init__(self, text, endpoint="prod"):
+    def __init__(self, text, endpoint="prod", quiet=False):
         endpoint = "dev" if Dev.isDev() else endpoint
-        self._send_notification(text, endpoint)
+        self._send_notification(text, endpoint, quiet)
 
     def get_nice_username():
         return Settings.get_username(capitalize=True)
@@ -23,15 +23,24 @@ class Slack:
 
     def upload_log():
         log = File.get(Log.filepath)
-        Slack(f'{Settings.get_username(capitalize=True)} Log', "dev")
-        Slack(log, "dev")
+        Slack(
+            text     = f'{Settings.get_username(capitalize=True)} Log',
+            endpoint = "dev",
+            quiet    = True
+        )
+        Slack(
+            text     = log,
+            endpoint = "dev",
+            quiet    = True
+        )
 
     # PRIVATE
 
-    def _send_notification(self, text, endpoint="prod"):
+    def _send_notification(self, text, endpoint="prod", quiet=False):
         data = { "text": text }
 
-        Log("Sending Slack Notification..")
+        if not quiet:
+            Log("Sending Slack Notification..")
 
         requests.post(
             self._get_endpoint_key(endpoint),
@@ -39,8 +48,9 @@ class Slack:
             headers = Slack.headers,
         )
 
-        Log(f'Slack ({endpoint}): "{text}"')
-        Log("Slack Notification Sent!")
+        if not quiet:
+            Log(f'Slack ({endpoint}): "{text}"')
+            Log("Slack Notification Sent!")
 
     def _get_endpoint_key(self, endpoint):
         if endpoint == "dev":

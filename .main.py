@@ -1,4 +1,4 @@
-import sys
+import traceback,sys
 from src.Slack import Slack
 from src.Update import Update
 from src.Settings import Settings
@@ -25,8 +25,7 @@ if __name__ == '__main__':
     try:
         menu_main()
     except Exception as e:
-        Log(e, "warning")
-
+        Log(traceback.format_exc(),"warning")
         # 0 = there was a problem
         # 1 = exit gracefully
         sys.exit(0)

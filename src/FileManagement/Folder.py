@@ -27,6 +27,11 @@ class Folder:
             shutil.rmtree(folderpath.absolute())
         Folder.create(folderpath.absolute())
 
+    def delete(folderpath):
+        folderpath = Path(folderpath)
+        if folderpath.exists():
+            shutil.rmtree(folderpath.absolute())
+
     def clear_temp():
         if not Dev.get("NO_CLEAR_TEMP"):
             Folder.clear("temp")

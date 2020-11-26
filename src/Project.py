@@ -62,9 +62,10 @@ class Project:
         return self.compressed.exists()
 
     def is_remote(self):
-        if self.drive.get_info(self.remote):
-            return True
-        return False
+        ID = self.drive.get_info(self.remote)
+        if not ID:
+            return False
+        return ID
 
     def create_menu_item(self):
         result = [ self.name.ljust(30)[:30] ]
