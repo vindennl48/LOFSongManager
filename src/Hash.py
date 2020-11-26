@@ -25,7 +25,7 @@ class Hash:
 
     def push(self):
         # Make sure hash is up-to-date
-        self._re_hash()
+        self.re_hash()
 
         # You must check this function during use!
         if not self.hash:
@@ -69,6 +69,9 @@ class Hash:
 
         return True
 
+    def re_hash(self):
+        self.hash = Hash.hash_file(self.filepath)
+
     # Static
     def hash_file(filepath):
         filepath   = Path(filepath)
@@ -85,8 +88,4 @@ class Hash:
                 fb = f.read(BLOCK_SIZE)
 
         return result.hexdigest()
-
-    # Private
-    def _re_hash(self):
-        self.hash = Hash.hash_file(self.filepath)
 

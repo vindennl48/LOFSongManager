@@ -271,6 +271,9 @@ class Project:
                 Log.press_enter()
                 return False
 
+            # Make sure hash is up to date
+            self.hash.re_hash()
+
             if not self._unpack():
                 return False
 
