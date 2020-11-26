@@ -14,6 +14,7 @@ class Drive:
         "zip":    "application/x-gzip",
         "folder": "application/vnd.google-apps.folder",
         "json":   "application/json",
+        "mp3":    "audio/mp3",
     }
 
     def __init__(self):
@@ -81,9 +82,9 @@ class Drive:
     def mkdir(self, name="Untitled", parents=[LOFSM_DIR_HASH]):
         return self.service.files().create(body={
             "name":     name,
-            "mimeType": mimeType["folder"],
+            "mimeType": Drive.mimeType["folder"],
             "parents":  parents,
-        }).execute()
+        }).execute()["id"]
 
     def upload(self, filepath, mimeType, parents=[LOFSM_DIR_HASH]):
         if Dev.get("NO_UPLOAD"):
@@ -138,7 +139,7 @@ class Drive:
 
         if file:
             print("      Uploaded successfully!")
-            return True
+            return file
         else:
             print(f'Failed to upload "{filepath.name}"!')
             return False

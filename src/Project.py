@@ -38,6 +38,7 @@ class Project:
         self.yourversion_temp = Path(f'{self._extracted_path()}/{name}_yourversion_temp.song')
         self.compressed       = Path(f'{self._compressed_path()}/{name}.lof')
         self.remote           = f'{LOFSM_DIR_PATH}/{self.name}.lof'
+        self.remote_audio_dir = f'{LOFSM_DIR_PATH}/{self.name}'
         self.hash             = Hash(self.compressed)
         self.dummy_media      = DummyFiles(f'{self._extracted_path()}/Media')
         self.dummy_bounces    = DummyFiles(f'{self._extracted_path()}/Bounces')
@@ -472,6 +473,36 @@ class Project:
                     destination = f'{self._temp_path()}/Bounces'
                 )
                 self.dummy_bounces.create()
+
+            elif path.name == "Mixdown":
+                # Copy all to temp dir first to get compressed
+                File.recursive_overwrite(path, f'{self._temp_path()}/{path.name}')
+
+                # Make directory if it doesnt exist
+                folder_id = self.drive.get_info(self.remote_audio_dir)
+                if not folder_id:
+                    folder_id = self.drive.mkdir(
+                        name = self.name
+                    )
+
+                # Upload audio files
+                mp3s = glob(f'{path}/*.mp3')
+                for mp3 in mp3s:
+                    mp3    = Path(mp3)
+
+                    # Check if audio file exists first
+                    if not self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}'):
+                        Log(f'Uploading "{mp3.name}" to the cloud',"sub")
+                        self.drive.upload(
+                            filepath = mp3.absolute(),
+                            mimeType = Drive.mimeType["mp3"],
+                            parents  = [ folder_id ]
+                        )
+                        # Send link to slack
+                        file_id = self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}')
+                        Slack.send_link(mp3.name, file_id)
+                    else:
+                        Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
 
             elif path.name == "History":
                 pass ## Ignore
