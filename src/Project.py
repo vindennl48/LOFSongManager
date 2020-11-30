@@ -46,6 +46,10 @@ class Project:
         self.drive            = Drive()
 
     def is_dirty(self):
+        # for testing uploads without needing to constantly open studio one
+        if Dev.get("ALL_IS_DIRTY"):
+            return True
+
         if self.song.exists() and self.song_original.exists():
             return not filecmp.cmp(self.song.absolute(), self.song_original.absolute(), shallow=False)
         return False
@@ -566,26 +570,30 @@ class Project:
         )
         Log("Uploading.. please be patient", "notice")
 
-        result = self.drive.upload(
-            filepath = self.compressed,
-            mimeType = Drive.mimeType['zip'],
-        )
+        if not Dev.get("NO_LOF_UPLOAD"):
+            result = self.drive.upload(
+                filepath = self.compressed,
+                mimeType = Drive.mimeType['zip'],
+            )
 
-        if not result:
-            Log("Drive upload could not complete..", "warning")
-            Log.press_enter()
-            return False
-        ##
+            if not result:
+                Log("Drive upload could not complete..", "warning")
+                Log.press_enter()
+                return False
 
-        # Set New Hash
-        if not self.hash.push():
-            return False
+            # Set New Hash
+            if not self.hash.push():
+                return False
+            ##
+
+            Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.name)}')
+
+        else:
+            Log("NO_LOF_UPLOAD is active, will not upload new projects","warning")
         ##
 
         # Cleanup
         Folder.clear_temp()
-
-        Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.name)}')
 
         Log("Compression and upload complete!", "notice")
 
