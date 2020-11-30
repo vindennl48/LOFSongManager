@@ -453,6 +453,14 @@ class Project:
             Folder.create(self._temp_path())
         ##
 
+        # Add dir on cloud if doesnt exist
+        folder_id = self.drive.get_info(self.remote_audio_dir)
+        if not folder_id:
+            folder_id = self.drive.mkdir(
+                name = self.name
+            )
+
+
         # Copy over the rest
         for path in glob(f'{self._extracted_path()}/*'):
             path   = Path(path)
@@ -460,10 +468,37 @@ class Project:
 
             if path.name == "Media":
                 self.dummy_media.remove()
+                # Copy all capture audio
                 result = Audio.folder_to_mp3(
                     folderpath  = path,
                     destination = f'{self._temp_path()}/Media'
                 )
+
+                ## Upload all scratch mp3s
+
+                # Upload audio files
+                mp3s = glob(f'{self._temp_path()}/Media/Scratch*.mp3')
+                mp3s.extend( glob(f'{self._temp_path()}/Media/SCRATCH*.mp3') )
+                for mp3 in mp3s:
+                    mp3 = Path(mp3)
+
+                    # Check if audio file exists first
+                    if not self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}'):
+                        Log(f'Uploading "{mp3.name}" to the cloud',"sub")
+                        self.drive.upload(
+                            filepath = mp3.absolute(),
+                            mimeType = Drive.mimeType["mp3"],
+                            parents  = [ folder_id ]
+                        )
+                        # Send link to slack
+                        Slack.send_link(
+                            link_name = f'Scratch for {self.name}, "{mp3.name}"',
+                            ID        = self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}')
+                        )
+                    else:
+                        Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
+                ##
+
                 self.dummy_media.create()
 
             elif path.name == "Bounces":
@@ -478,17 +513,10 @@ class Project:
                 # Copy all to temp dir first to get compressed
                 File.recursive_overwrite(path, f'{self._temp_path()}/{path.name}')
 
-                # Make directory if it doesnt exist
-                folder_id = self.drive.get_info(self.remote_audio_dir)
-                if not folder_id:
-                    folder_id = self.drive.mkdir(
-                        name = self.name
-                    )
-
                 # Upload audio files
                 mp3s = glob(f'{path}/*.mp3')
                 for mp3 in mp3s:
-                    mp3    = Path(mp3)
+                    mp3 = Path(mp3)
 
                     # Check if audio file exists first
                     if not self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}'):
@@ -499,8 +527,10 @@ class Project:
                             parents  = [ folder_id ]
                         )
                         # Send link to slack
-                        file_id = self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}')
-                        Slack.send_link(mp3.name, file_id)
+                        Slack.send_link(
+                            link_name = f'#MIXDOWN# for {self.name}, "{mp3.name}"',
+                            ID        = self.drive.get_info(f'{self.remote_audio_dir}/{mp3.name}')
+                        )
                     else:
                         Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
 

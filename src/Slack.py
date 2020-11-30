@@ -34,9 +34,9 @@ class Slack:
             quiet    = True
         )
 
-    def send_link(name, ID):
+    def send_link(link_name, ID):
         username = Slack.get_nice_username()
-        link     = f'{username} uploaded "{name}": https://drive.google.com/file/d/{ID}'
+        link     = f'{username} uploaded {link_name}: https://drive.google.com/file/d/{ID}'
         Slack(link)
 
     # PRIVATE
