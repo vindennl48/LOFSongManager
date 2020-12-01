@@ -148,6 +148,11 @@ class Project:
 ## Opening Projects 
 ##################################################
     def open(self):
+        # make sure these folders exist
+        Folder.create(f'{self._extracted_path()}/Media/')
+        Folder.create(f'{self._extracted_path()}/Bounces/')
+        Folder.create(f'{self._extracted_path()}/Mixdown/')
+
         if not self._update():
             dialog = Dialog(
                 title = "ERROR: Update Unsuccessful",
