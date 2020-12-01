@@ -232,6 +232,134 @@ class Project:
 
 
     ## Private ##
+    def _unpack(self):
+        # convert compressed project to extracted project
+        Folder.clear_temp()
+        Tar.extract(
+            filepath    = self.compressed,
+            destination = Project.temp_parent
+        )
+
+        if self.is_dirty():
+            dialog = Dialog(
+                title = "Local changes found!",
+                body  = [
+                    f'When local changes are detected, this software will',
+                    f'generate a conflict file.  You must open both projects',
+                    f'and copy all of your changes to the newly downloaded',
+                    f'project.',
+                    f'\n',
+                    f'\n',
+                    f'To prevent this from happening in the future, make sure',
+                    f'you always have the most up-to-date project BEFORE making',
+                    f'changes, and make sure you push your project to the cloud',
+                    f'as soon as you are finished!',
+                    f'\n',
+                    f'\n',
+                ]
+            )
+            dialog.press_enter()
+
+            File.recursive_overwrite(
+                src  = self.song,
+                dest = self.yourversion
+            )
+        ##
+
+        # Create project folder if it doesnt exist
+        Folder.create(self._extracted_path())
+        Folder.create(f'{self._extracted_path()}/Media/')
+        Folder.create(f'{self._extracted_path()}/Bounces/')
+        Folder.create(f'{self._extracted_path()}/Mixdown/')
+
+        # Copy over the rest
+        for path in glob(f'{self._temp_path()}/*'):
+            path   = Path(path)
+            result = True
+
+            if path.name == "Media":
+                # If the folder doesnt exist, create it and remove dummy files
+                Folder.create(f'{self._extracted_path()}/Media/')
+                self.dummy_media.remove()
+
+                # clean out cached audio
+                if not self.is_dirty():
+                    # Remove unused cached audio
+                    wavs      = glob(f'{self._extracted_path()}/Media/*.wav')
+                    wavs      = [ Path(x) for x in wavs ]
+
+                    mp3s      = glob(f'{path}/*.mp3')
+                    mp3s      = [ Path(x) for x in mp3s ]
+                    mp3_names = [ x.stem for x in mp3s ]
+
+                    for wav in wavs:
+                        if wav.stem not in mp3_names:
+                            File.delete(wav)
+                    ##
+
+                # Keep dummy file data in sync
+                if (path / "dummy.json").exists():
+                    File.recursive_overwrite(
+                        src  = f'{path}/dummy.json',
+                        dest = f'{self._extracted_path()}/Media/dummy.json'
+                    )
+
+                result = Audio.folder_to_wav(
+                    folderpath  = path,
+                    destination = f'{self._extracted_path()}/Media/'
+                )
+
+                self.dummy_media.create()
+
+            elif path.name == "Bounces":
+                # If the folder doesnt exist, create it and remove dummy files
+                Folder.create(f'{self._extracted_path()}/Bounces/')
+                self.dummy_bounces.remove()
+
+                # clean out cached audio
+                if not self.is_dirty():
+                    Folder.clear(f'{self._extracted_path()}/Bounces/')
+
+                # Keep dummy file data in sync
+                if (path / "dummy.json").exists():
+                    File.recursive_overwrite(
+                        src  = f'{path}/dummy.json',
+                        dest = f'{self._extracted_path()}/Bounces/dummy.json'
+                    )
+
+                result = Audio.folder_to_wav(
+                    folderpath  = path,
+                    destination = f'{self._extracted_path()}/Bounces/'
+                )
+
+                self.dummy_bounces.create()
+
+            elif path.suffix == ".song":
+                pass  ## Ignore
+            elif path.name == "History":
+                pass  ## Ignore
+            else:
+                File.recursive_overwrite(path, f'{self.song.parent}/{path.name}')
+
+            if not result:
+                return False
+        ##
+
+        # Copy over song files
+        File.recursive_overwrite(
+            src  = f'{self._temp_path()}/{self.song.name}',
+            dest = self.song
+        )
+        File.recursive_overwrite(
+            src  = f'{self._temp_path()}/{self.song.name}',
+            dest = self.song_original
+        )
+        ##
+
+        Folder.clear_temp()
+
+        return True
+
     def _update(self):
         if not self.is_recent() and self.is_remote():
             if self.song.exists():
@@ -281,86 +409,6 @@ class Project:
 
             if not self._unpack():
                 return False
-
-        return True
-
-    def _unpack(self):
-        # convert compressed project to extracted project
-        Folder.clear_temp()
-        Tar.extract(
-            filepath    = self.compressed,
-            destination = Project.temp_parent
-        )
-
-        if self.is_dirty():
-            dialog = Dialog(
-                title = "Local changes found!",
-                body  = [
-                    f'When local changes are detected, this software will',
-                    f'generate a conflict file.  You must open both projects',
-                    f'and copy all of your changes to the newly downloaded',
-                    f'project.',
-                    f'\n',
-                    f'\n',
-                    f'To prevent this from happening in the future, make sure',
-                    f'you always have the most up-to-date project BEFORE making',
-                    f'changes, and make sure you push your project to the cloud',
-                    f'as soon as you are finished!',
-                    f'\n',
-                    f'\n',
-                ]
-            )
-            dialog.press_enter()
-
-            File.recursive_overwrite(
-                src  = self.song,
-                dest = self.yourversion
-            )
-        ##
-
-        # Copy over song files
-        Folder.create(self._extracted_path())
-        File.recursive_overwrite(
-            src  = f'{self._temp_path()}/{self.song.name}',
-            dest = self.song
-        )
-        File.recursive_overwrite(
-            src  = f'{self._temp_path()}/{self.song.name}',
-            dest = self.song_original
-        )
-        ##
-
-        # Copy over the rest
-        for path in glob(f'{self._temp_path()}/*'):
-            path   = Path(path)
-            result = True
-
-            if path.name == "Media":
-                result = Audio.folder_to_wav(
-                    folderpath  = path,
-                    destination = f'{self._extracted_path()}/Media/'
-                )
-                self.dummy_media.create()
-
-            elif path.name == "Bounces":
-                result = Audio.folder_to_wav(
-                    folderpath  = path,
-                    destination = f'{self._extracted_path()}/Bounces/'
-                )
-                self.dummy_bounces.create()
-
-            elif path.suffix == ".song":
-                pass  ## Ignore
-            elif path.name == "History":
-                pass  ## Ignore
-            else:
-                File.recursive_overwrite(path, f'{self.song.parent}/{path.name}')
-
-            if not result:
-                return False
-        ##
-
-        Folder.clear_temp()
 
         return True
 
@@ -455,6 +503,11 @@ class Project:
             )
         else:
             Folder.create(self._temp_path())
+
+        # Create folders if they don't exist
+        Folder.create(f'{self._temp_path()}/Media/')
+        Folder.create(f'{self._temp_path()}/Bounces/')
+        Folder.create(f'{self._temp_path()}/Mixdown/')
         ##
 
         # Add dir on cloud if doesnt exist
@@ -464,7 +517,6 @@ class Project:
                 name = self.name
             )
 
-
         # Copy over the rest
         for path in glob(f'{self._extracted_path()}/*'):
             path   = Path(path)
@@ -472,6 +524,27 @@ class Project:
 
             if path.name == "Media":
                 self.dummy_media.remove()
+
+                # Remove unused cached audio
+                mp3s      = glob(f'{self._temp_path()}/Media/*.mp3')
+                mp3s      = [ Path(x) for x in mp3s ]
+
+                wavs      = glob(f'{path}/*.wav')
+                wavs      = [ Path(x) for x in wavs ]
+                wav_names = [ x.stem for x in wavs ]
+
+                for mp3 in mp3s:
+                    if mp3.stem not in wav_names:
+                        File.delete(mp3)
+                ##
+
+                # Keep dummy file data in sync
+                if (path / "dummy.json").exists():
+                    File.recursive_overwrite(
+                        src  = f'{path}/dummy.json',
+                        dest = f'{self._temp_path()}/Media/dummy.json'
+                    )
+
                 # Copy all capture audio
                 result = Audio.folder_to_mp3(
                     folderpath  = path,
@@ -664,6 +737,9 @@ class Project:
                 command = f'{filepath.absolute()}',
                 wait    = wait
             )
+            # Refresh dummy files
+            self.dummy_media.create()
+            self.dummy_bounces.create()
         else:
             Log("Development Mode prevented Studio One from opening", "alert")
             Log.press_enter()

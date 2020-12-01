@@ -19,7 +19,7 @@ class Slack:
         return Settings.get_username(capitalize=True)
 
     def make_nice_project_name(name):
-        return f'"{name.replace("_"," ")}"'
+        return f'"{name.replace("_"," ")}"'.capitalize()
 
     def upload_log():
         log = File.get(Log.filepath)
