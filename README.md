@@ -19,10 +19,10 @@ You must have the following pre-installed:
    - After installing Python and Pip, run:
      `pip3 install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib`
 
-Once you have all that installed, download this repository and extract it to a location of your choice (We would suggest your documents folder or desktop).
+Once you have all that installed, clone this repository and extract it to a location of your choice (We would suggest your documents folder or desktop).
 
 ### Google Drive Auth
-You must get a copy of your Google Drive API's `credentials.json` file to gain access to your Google Drive server.  If you do not know what this is or how to gain access to it, ask your Google Drive administrator for a copy of this.  If you do not have an admin, or you are the admin and setting this up for the first time, refer to the Google Drive API docs located here: https://developers.google.com/docs/api/quickstart/python.  Look for the blue button titled `Enable the Google Docs API`.  Once you download this JSON file, you will need to rename it `credentials.json` and place it in the root of the project, `LOFSongManager/`.
+You must get a copy of the `credentials.json` file from the Google Drive API while signed into the LOF Google account to gain access to the Google Drive server.  If you do not know what this is or how to gain access to it, [ask for it in Slack](https://landoffires.slack.com/messages/lofsongmanager), or refer to [the Google Drive API docs](https://developers.google.com/docs/api/quickstart/python).  Look for the blue button titled `Enable the Google Docs API`.  Once you download this JSON file, you will need to rename it `credentials.json` and place it in the root of the project, `LOFSongManager/`.
 
 ### Windows Only
 Next, take the extracted `ffmpeg` directory you downloaded earlier and move it into the `LOFSongManager/src/` directory.  Make sure you can see all the files and folders in `LOFSongManager/src/ffmpeg/<all the files>`.  If you have all the files in `LOFSongManager/src/<all the files>` or `LOFSongManager/src/ffmpeg/ffmpeg/<all the files>`, the program will not run correctly.
