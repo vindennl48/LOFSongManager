@@ -11,8 +11,8 @@ from google.auth.transport.requests import Request
 
 
 # Definitions
-key_cloud_root_id     = "cloud_root_id"
-key_cloud_root_id_dev = "cloud_root_id_dev"
+KEY_CLOUD_ROOT_ID     = "cloud_root_id"
+KEY_CLOUD_ROOT_ID_DEV = "cloud_root_id_dev"
 
 
 class Drive:
@@ -56,10 +56,10 @@ class Drive:
 
     def get_root_id():
         # Check to see which root id we are getting
-        key   = key_cloud_root_id
+        key   = KEY_CLOUD_ROOT_ID
         title = "Cloud ID Missing"
         if Dev.get("ALT_LOCATION"):
-            key   = key_cloud_root_id_dev
+            key   = KEY_CLOUD_ROOT_ID_DEV
             title = "Cloud DEVELOPMENT ID Missing"
 
         # Get the ID from Settings
@@ -220,7 +220,7 @@ class Drive:
 
         if file:
             print("      Uploaded successfully!")
-            return file
+            return Drive.get_id(filepath.name, root=parent)
         else:
             print(f'Failed to upload "{filepath.name}"!')
             return False
@@ -257,6 +257,8 @@ class Drive:
         result = Drive.service.files().delete(
             fileId = ID
         ).execute()
+
+Drive.initialize()
 
 #    These functions were part of the slowdown issue
 ################################################################################
