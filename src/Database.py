@@ -30,11 +30,14 @@ class Entry:
         self.name  = name
         self.data  = data
 
+    # Save changes from self.data to cloud database
     def update(self):
         Database.set_entry(self.model, self.name, self.data)
 
+    # Pull down any updates from the cloud database
     def refresh(self):
-        self.data = Database.get_entry(self.model, self.name)
+        Database.refresh()
+        self.data = Database.get_entry(self.model, self.name).data
 
 
 class Database:

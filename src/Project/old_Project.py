@@ -86,9 +86,9 @@ class Project:
         '''
         *update          = is_remote, is_cached, not is_recent, not is_dirty
         *update_conflict = is_remote, is_cached, not is_recent, is_dirty
-        new             = is_remote, not is_cached
-        not_uploaded    = not is_remote
-        dirty           = is_dirty
+        new              = is_remote, not is_cached
+        not_uploaded     = not is_remote
+        dirty            = is_dirty
         '''
 
         if self.is_remote():
@@ -128,17 +128,23 @@ class Project:
 
     ## Static ##
     def get_local_projects():
-        return [ Project(x.name) for x in Folder.ls_folders(Project.extracted_parent) ]
+        # return [ Project(x.name) for x in Folder.ls_folders(Project.extracted_parent) ]
+        return Folder.ls_folders(Project.extracted_parent)
 
     def get_remote_projects():
         drive_projects = Drive().ls(search=LOFSM_DIR_HASH)
-        return [ Project(x["name"]) for x in drive_projects if x['mimeType'] == Drive.mimeType['zip'] ]
+        # return [ Project(x["name"]) for x in drive_projects if x['mimeType'] == Drive.mimeType['zip'] ]
+        return [ x for x in drive_projects if x['mimeType'] == Drive.mimeType['zip'] ]
 
     def get_all_projects():
-        local_projects  = Project.get_local_projects()
-        remote_projects = Project.get_remote_projects()
-        projects        = list(local_projects)
+        Log("Gathering Local Projects..")
+        local_projects = Project.get_local_projects()
 
+        Log("Gathering Remote Projects..")
+        remote_projects = Project.get_remote_projects()
+
+        # Merging projects together
+        projects = list(local_projects)
         projects.extend(x for x in remote_projects if x not in projects)
 
         return projects
