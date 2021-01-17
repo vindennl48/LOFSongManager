@@ -75,3 +75,43 @@ class Slack:
             return Settings.get_key(Settings.slack_dev_key)
         elif endpoint == "prod":
             return Settings.get_key(Settings.slack_prod_key)
+
+    def reset_slack_endpoints():
+        Settings.set_key(Settings.slack_prod_key, "")
+        Settings.set_key(Settings.slack_dev_key, "")
+        Settings.set_slack_endpoints()
+
+    def check_slack_endpoints():
+        settings = Settings.get_all()
+
+        if not Settings.slack_prod_key in settings or \
+           not Settings.slack_dev_key in settings:
+            return False
+
+        if settings[Settings.slack_prod_key] == "" or \
+           settings[Settings.slack_dev_key] == "":
+            return False
+
+        return True
+
+    def set_slack_endpoints():
+        if not Settings.check_slack_endpoints():
+            drive = Drive()
+
+            Settings.set_key(
+                key  = Settings.slack_prod_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.slack_prod_key
+                )
+            )
+
+            Settings.set_key(
+                key  = Settings.slack_dev_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.slack_dev_key
+                )
+            )
