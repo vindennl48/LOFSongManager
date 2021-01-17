@@ -2,19 +2,23 @@ import os, io, pickle, shutil
 from pathlib import Path
 from src.dev import Dev
 from src.TERMGUI.Log import Log
-from src.env import LOFSM_DIR_HASH
 from src.Settings import Settings
 from src.TERMGUI.Dialog import Dialog
-from src.FileManagement.File import File
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
+
+# Definitions
 key_cloud_root_id     = "cloud_root_id"
 key_cloud_root_id_dev = "cloud_root_id_dev"
 
+
 class Drive:
+    service = None
+    root_id = None
+
     mimeType = {
         "zip":    "application/x-gzip",
         "folder": "application/vnd.google-apps.folder",
@@ -22,8 +26,8 @@ class Drive:
         "mp3":    "audio/mp3",
     }
 
-    def __init__(self):
-        self.service = None
+    def initialize():
+        Drive.service = None
 
         # If modifying these scopes, delete the file token.pickle.
         SCOPES = ["https://www.googleapis.com/auth/drive"]
@@ -45,12 +49,12 @@ class Drive:
             with open("token.pickle", "wb") as token:
                 pickle.dump(creds, token)
 
-        self.service = build("drive", "v3", credentials=creds)
+        Drive.service = build("drive", "v3", credentials=creds)
 
         # Root of the LOFSM project on the cloud
-        self.root_id = self.get_root_id()
+        Drive.root_id = Drive.get_root_id()
 
-    def get_root_id(self):
+    def get_root_id():
         # Check to see which root id we are getting
         key   = key_cloud_root_id
         title = "Cloud ID Missing"
@@ -77,7 +81,7 @@ class Drive:
             )
             ans = dialog.get_result("Filepath")
 
-            result = self.get_id("root", ans)
+            result = Drive.get_id(search=ans, root="root")
 
             if not result:
                 raise Exception("There was a problem with getting the Cloud Root ID..")
@@ -86,14 +90,14 @@ class Drive:
 
         return result
 
-    def get_id(self, search=None, root=None):
+    def get_id(search=None, root=None):
         # This function lets you get the ID of a file / folder
         # search = file / folder path
         # root   = starting point for search path
 
         # If there is no value for 'root', set root to project root
         if not root:
-            root = self.root_id
+            root = Drive.root_id
 
         # If there is no value for 'search', the root_id is returned
         # Provides an easy way of getting the project root_id
@@ -104,7 +108,7 @@ class Drive:
         parent    = None
 
         for folder in path_list:
-            results = self.ls(search=root if not parent else parent)
+            results = Drive.ls(search=root if not parent else parent)
             result  = next((x for x in results if x["name"] == folder), None)
 
             if not result:
@@ -116,53 +120,53 @@ class Drive:
         #  ends up being the requested file/folder at the end.
         return parent
 
-    def ls(self, search=None, filter=None):
+    def ls(search=None, filter=None):
         # Search can only be either Path or ID
         # To LS into directory in project root do:
-        #   self.ls(search=self.get_id("<folder>"))
+        #   Drive.ls(search=Drive.get_id("<folder>"))
 
         # filter is a mimeType to sort out different filetypes
         # example:
-        #   self.ls(search=self.root_id, filter=self.mimeType["zip"])
+        #   Drive.ls(search=Drive.root_id, filter=Drive.mimeType["zip"])
         result = None
 
         if not search:
-            result = self.ls( self.root_id )
+            result = Drive.ls( Drive.root_id )
 
         elif "/" in search:
             # If the search term is a path
-            result = self.ls( self.get_id(search) )
+            result = Drive.ls( Drive.get_id(search) )
         else:
             # If the search term is a folder ID
-            result = self.service.files().list(q=f'"{search}" in parents and trashed=False').execute().get("files", [])
+            result = Drive.service.files().list(q=f'"{search}" in parents and trashed=False').execute().get("files", [])
 
         if filter:
             return [ x for x in result if x["mimeType"] == filter ]
         return result
 
-    def print_ls(self, ls):
+    def print_ls(ls):
         for result in ls:
             print(f' - Name: "{result["name"]}" | Id: "{result["id"]}"')
 
-    def mkdir(self, name="Untitled", parent=None):
+    def mkdir(name="Untitled", parent=None):
         # Create folder inside parent directory
         # This returns the newly created folder ID
 
         # If no parent is specified, use the project root_id
         if not parent:
-            parent = self.root_id
+            parent = Drive.root_id
 
-        return self.service.files().create(body={
+        return Drive.service.files().create(body={
             "name":     name,
             "mimeType": Drive.mimeType["folder"],
             "parents":  [ parent ],
         }).execute()["id"]
 
-    def upload(self, filepath, mimeType, parent=None):
+    def upload(filepath, mimeType, parent=None):
 
         # If no parent is specified, use the project root_id
         if not parent:
-            parent = self.root_id
+            parent = Drive.root_id
 
         if Dev.get("NO_UPLOAD"):
             Log("Dev Mode prevented 'Drive.upload' function","notice")
@@ -172,11 +176,11 @@ class Drive:
         file     = None
 
         # Check to see if the file is already uploaded
-        results = self.ls(parent)
+        results = Drive.ls(parent)
         for r in results:
             if r["name"] == filepath.name:
                 # Update
-                file = self.service.files().update(
+                file = Drive.service.files().update(
                     fileId=r["id"],
                     body={
                         "name": r["name"],
@@ -192,7 +196,7 @@ class Drive:
 
         # If file is not already uploaded
         if not file:
-            file = self.service.files().create(
+            file = Drive.service.files().create(
                 body={
                     "name":    filepath.name,
                     "parents": [ parent ],
@@ -221,13 +225,13 @@ class Drive:
             print(f'Failed to upload "{filepath.name}"!')
             return False
 
-    def download(self, ID, save_path):
+    def download(ID, save_path):
         if Dev.get("NO_DOWNLOAD"):
             Log("Dev Mode prevented 'Drive.download' function","notice")
             return True
 
         save_path  = Path(save_path)
-        request    = self.service.files().get_media(fileId=ID)
+        request    = Drive.service.files().get_media(fileId=ID)
         fh         = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request, chunksize=51200*1024)
 
@@ -249,8 +253,8 @@ class Drive:
             return True
         return False
 
-    def delete(self, ID):
-        result = self.service.files().delete(
+    def delete(ID):
+        result = Drive.service.files().delete(
             fileId = ID
         ).execute()
 
