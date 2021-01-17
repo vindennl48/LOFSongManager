@@ -3,11 +3,16 @@ from pathlib import Path
 from src.dev import Dev
 from src.TERMGUI.Log import Log
 from src.env import LOFSM_DIR_HASH
+from src.Settings import Settings
+from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+
+key_cloud_root_id     = "cloud_root_id"
+key_cloud_root_id_dev = "cloud_root_id_dev"
 
 class Drive:
     mimeType = {
@@ -42,51 +47,123 @@ class Drive:
 
         self.service = build("drive", "v3", credentials=creds)
 
-    def get_info(self, search):
-        # This function returns the ID of a file or folder given 
-        #   its Drive filepath.  (I keep forgetting this gets file
-        #   ID's as well as folder ID's.  The 'parent' variable
-        #   is a bit miss-leading)
-        if "/" in search:
-            path_list = search.split("/")
-            parent    = None
+        # Root of the LOFSM project on the cloud
+        self.root_id = self.get_root_id()
 
-            for folder in path_list:
-                results = self.ls(search="root" if not parent else parent)
-                result  = next((x for x in results if x["name"] == folder), None)
+    def get_root_id(self):
+        # Check to see which root id we are getting
+        key   = key_cloud_root_id
+        title = "Cloud ID Missing"
+        if Dev.get("ALT_LOCATION"):
+            key   = key_cloud_root_id_dev
+            title = "Cloud DEVELOPMENT ID Missing"
 
-                if not result:
-                    return False
+        # Get the ID from Settings
+        result = Settings.get_key(key)
 
-                parent = result["id"]
+        # If the ID doesnt exist in settings, lets ask for it!
+        if not result:
+            dialog = Dialog(
+                title = title,
+                body  = [
+                    f'The Cloud root ID is currently missing.. So lets find it!',
+                    f'\n',
+                    f'\n',
+                    f'Ask your administrator for the "Cloud Root Filepath" and',
+                    f'enter that path below.',
+                    f'\n',
+                    f'\n',
+                ]
+            )
+            ans = dialog.get_result("Filepath")
 
-            return parent
-        else:
-            raise Exception("Drive.get_info requires a valid filepath!")
+            result = self.get_id("root", ans)
 
-    def ls(self, search):
+            if not result:
+                raise Exception("There was a problem with getting the Cloud Root ID..")
+
+            Settings.set_key(key, result)
+
+        return result
+
+    def get_id(self, search=None, root=None):
+        # This function lets you get the ID of a file / folder
+        # search = file / folder path
+        # root   = starting point for search path
+
+        # If there is no value for 'root', set root to project root
+        if not root:
+            root = self.root_id
+
+        # If there is no value for 'search', the root_id is returned
+        # Provides an easy way of getting the project root_id
         if not search:
-            raise Exception(f'Path: "{search}" doesn\'t exist!')
+            return root
 
-        if "/" in search:
-            # The self.get_info will trigger the above exception if no file/folder is found
-            return self.ls( self.get_info(search)["id"] )
+        path_list = search.split("/")
+        parent    = None
+
+        for folder in path_list:
+            results = self.ls(search=root if not parent else parent)
+            result  = next((x for x in results if x["name"] == folder), None)
+
+            if not result:
+                return None
+
+            parent = result["id"]
+
+        # Because of the recursive nature of this function, 'parent'
+        #  ends up being the requested file/folder at the end.
+        return parent
+
+    def ls(self, search=None, filter=None):
+        # Search can only be either Path or ID
+        # To LS into directory in project root do:
+        #   self.ls(search=self.get_id("<folder>"))
+
+        # filter is a mimeType to sort out different filetypes
+        # example:
+        #   self.ls(search=self.root_id, filter=self.mimeType["zip"])
+        result = None
+
+        if not search:
+            result = self.ls( self.root_id )
+
+        elif "/" in search:
+            # If the search term is a path
+            result = self.ls( self.get_id(search) )
         else:
-            # If the search is a file/folder ID
-            return self.service.files().list(q=f'"{search}" in parents and trashed=False').execute().get("files", [])
+            # If the search term is a folder ID
+            result = self.service.files().list(q=f'"{search}" in parents and trashed=False').execute().get("files", [])
+
+        if filter:
+            return [ x for x in result if x["mimeType"] == filter ]
+        return result
 
     def print_ls(self, ls):
         for result in ls:
             print(f' - Name: "{result["name"]}" | Id: "{result["id"]}"')
 
-    def mkdir(self, name="Untitled", parents=[LOFSM_DIR_HASH]):
+    def mkdir(self, name="Untitled", parent=None):
+        # Create folder inside parent directory
+        # This returns the newly created folder ID
+
+        # If no parent is specified, use the project root_id
+        if not parent:
+            parent = self.root_id
+
         return self.service.files().create(body={
             "name":     name,
             "mimeType": Drive.mimeType["folder"],
-            "parents":  parents,
+            "parents":  [ parent ],
         }).execute()["id"]
 
-    def upload(self, filepath, mimeType, parents=[LOFSM_DIR_HASH]):
+    def upload(self, filepath, mimeType, parent=None):
+
+        # If no parent is specified, use the project root_id
+        if not parent:
+            parent = self.root_id
+
         if Dev.get("NO_UPLOAD"):
             Log("Dev Mode prevented 'Drive.upload' function","notice")
             return True
@@ -95,7 +172,7 @@ class Drive:
         file     = None
 
         # Check to see if the file is already uploaded
-        results = self.ls(search=parents[0])
+        results = self.ls(parent)
         for r in results:
             if r["name"] == filepath.name:
                 # Update
@@ -118,7 +195,7 @@ class Drive:
             file = self.service.files().create(
                 body={
                     "name":    filepath.name,
-                    "parents": parents,
+                    "parents": [ parent ],
                 },
                 media_body=MediaFileUpload(
                     filepath.absolute(),
@@ -177,48 +254,63 @@ class Drive:
             fileId = ID
         ).execute()
 
-    def get_json(self, remote_file, local_filepath):
-        # remote_file    = cloud ID or cloud filepath
-        # local_filepath = place to save the json file temporarily
-        local_filepath = Path(local_filepath)
-
-        download = self.download(
-            ID        = self.get_info(remote_file),
-            save_path = local_filepath
-        )
-
-        if not download:
-            raise Exception(f'Something went wrong when downloading "{local_filepath.name}"')
-
-        return File.get_json(local_filepath)
-
-    def set_json(self, local_filepath, parents=[LOFSM_DIR_HASH]):
-        # remote_file    = cloud ID or cloud filepath
-        # local_filepath = place to save the json file temporarily
-        local_filepath = Path(local_filepath)
-
-        upload = self.upload(
-            filepath = local_filepath,
-            mimeType = Drive.mimeType["json"],
-            parents  = parents
-        )
-
-        if not upload:
-            raise Exception(f'Something went wrong when uploading "{local_filepath.name}"')
-
-    def get_json_key(self, remote_file, local_filepath, key):
-        # remote_file    = cloud ID or cloud filepath
-        # local_filepath = place to save the json file temporarily
-        self.get_json(remote_file, local_filepath)
-        return File.get_json_key(local_filepath, key)
-
-    def set_json_key(self, remote_file, local_filepath, key, data, parents=[LOFSM_DIR_HASH]):
-        self.get_json(remote_file, local_filepath)
-        File.set_json_key(local_filepath, key, data)
-        self.set_json(local_filepath, parents)
-
-    def remove_json_key(self, remote_file, local_filepath, key, parents=[LOFSM_DIR_HASH]):
-        self.get_json(remote_file, local_filepath)
-        File.remove_json_key(local_filepath, key)
-        self.set_json(local_filepath, parents)
-
+#    These functions were part of the slowdown issue
+################################################################################
+#    def get_json(self, remote_file, local_filepath):
+#        # remote_file    = cloud ID or cloud filepath
+#        # local_filepath = place to save the json file temporarily
+#        local_filepath = Path(local_filepath)
+#
+#        download = self.download(
+#            ID        = self.get_info(remote_file),
+#            save_path = local_filepath
+#        )
+#
+#        if not download:
+#            raise Exception(f'Something went wrong when downloading "{local_filepath.name}"')
+#
+#        return File.get_json(local_filepath)
+#
+#    def set_json(self, local_filepath, parent=None):
+#        # remote_file    = cloud ID or cloud filepath
+#        # local_filepath = place to save the json file temporarily
+#
+#        # If no parent is specified, use the project root_id
+#        if not parent:
+#            parent = self.root_id
+#
+#        local_filepath = Path(local_filepath)
+#
+#        upload = self.upload(
+#            filepath = local_filepath,
+#            mimeType = Drive.mimeType["json"],
+#            parent   = parent
+#        )
+#
+#        if not upload:
+#            raise Exception(f'Something went wrong when uploading "{local_filepath.name}"')
+#
+#    def get_json_key(self, remote_file, local_filepath, key):
+#        # remote_file    = cloud ID or cloud filepath
+#        # local_filepath = place to save the json file temporarily
+#        self.get_json(remote_file, local_filepath)
+#        return File.get_json_key(local_filepath, key)
+#
+#    def set_json_key(self, remote_file, local_filepath, key, data, parent=None):
+#        # If no parent is specified, use the project root_id
+#        if not parent:
+#            parent = self.root_id
+#
+#        self.get_json(remote_file, local_filepath)
+#        File.set_json_key(local_filepath, key, data)
+#        self.set_json(local_filepath, parent)
+#
+#    def remove_json_key(self, remote_file, local_filepath, key, parent=None):
+#        # If no parent is specified, use the project root_id
+#        if not parent:
+#            parent = self.root_id
+#
+#        self.get_json(remote_file, local_filepath)
+#        File.remove_json_key(local_filepath, key)
+#        self.set_json(local_filepath, parent)
+#
