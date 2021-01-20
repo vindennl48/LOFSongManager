@@ -78,7 +78,7 @@ class DummyFiles:
 
         for file in json_file['dummy']:
             file = Path(f"{self.filepath}/{file}")
-            if file.stat().st_size == 0:
+            if file.exists() and file.stat().st_size == 0:
                 file.unlink()
 
         json_file['dummy'] = []
