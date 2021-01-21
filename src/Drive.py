@@ -93,7 +93,7 @@ class Drive:
     def get_id(search=None, root=None):
         # This function lets you get the ID of a file / folder
         # search = file / folder path
-        # root   = starting point for search path
+        # root   = id of root, starting point for search path
 
         # If there is no value for 'root', set root to project root
         if not root:
@@ -155,6 +155,11 @@ class Drive:
         # If no parent is specified, use the project root_id
         if not parent:
             parent = Drive.root_id
+
+        # Check to make sure file doesn't already exist
+        dir_id = Drive.get_id(name, parent)
+        if dir_id:
+            return dir_id
 
         return Drive.service.files().create(body={
             "name":     name,
