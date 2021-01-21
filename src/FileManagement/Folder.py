@@ -46,9 +46,18 @@ class Folder:
         folders    = [ Path(x) for x in folders ]
         return folders
 
-    def ls_files(folderpath, extension):
+    def ls_files(folderpath, extension=None, filename=None):
         folderpath = Path(folderpath)
-        files = glob(f"{folderpath.absolute()}/*.{extension}")
+
+        if extension:
+            extension = f'.{extension}'
+        else:
+            extension = ""
+
+        if not filename:
+            filename = "*"
+
+        files = glob(f"{folderpath.absolute()}/{filename}{extension}")
         files = [ Path(x) for x in files ]
         return files
 
