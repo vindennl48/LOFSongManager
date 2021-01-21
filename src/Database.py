@@ -32,12 +32,14 @@ class Entry:
 
     # Save changes from self.data to cloud database
     def update(self):
-        Database.set_entry(self.model, self.name, self.data)
+        return Database.set_entry(self.model, self.name, self.data)
 
     # Pull down any updates from the cloud database
     def refresh(self):
         Database.refresh()
-        self.data = Database.get_entry(self.model, self.name).data
+        reault = Database.get_entry(self.model, self.name).data
+        if result:
+            self.data = result
 
 
 class Database:
@@ -68,6 +70,10 @@ class Database:
         return entries
 
     def set_entry(model, name, data):
+        # If there is no 'id' then user needs to upload the project first!
+        if not data["id"]:
+            return False
+
         # Before updating the database, make sure we are up-to-date
         Database.refresh()
 
