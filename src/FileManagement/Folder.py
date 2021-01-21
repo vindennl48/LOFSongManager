@@ -3,6 +3,7 @@ from glob import glob
 from src.dev import Dev
 from pathlib import Path
 from src.TERMGUI.Log import Log
+from src.FileManagement.File import File
 
 class Folder:
     def create(folderpath, skip_if_exists=True):
@@ -50,3 +51,13 @@ class Folder:
         files = glob(f"{folderpath.absolute()}/*.{extension}")
         files = [ Path(x) for x in files ]
         return files
+
+    def copy(folderpath, destination):
+        destination = Path(destination)
+        Folder.create(destination)
+
+        for file in Folder.ls_files(folderpath):
+            File.recursive_overwrite(
+                src  = file,
+                dest = destination/file.name
+            )
