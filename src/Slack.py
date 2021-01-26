@@ -47,13 +47,26 @@ class Slack:
         if not quiet:
             Log("Sending Slack Notification..")
 
-        requests.post(
-            self._get_endpoint_key(endpoint),
-            data    = json.dumps(data),
-            headers = Slack.headers,
-        )
+        # Attempt to send notification 5x
+        i = 0
+        while i < 5:
+            try:
+                requests.post(
+                    self._get_endpoint_key(endpoint),
+                    data    = json.dumps(data),
+                    headers = Slack.headers,
+                )
 
-        if not quiet:
+                i = 10
+            except:
+                i += 1
+                Log(f'Slack notification refused to send! Try: {i}', "warning")
+
+        if i != 10:
+            # Slack notification failed 5x, skipping slack notification
+            Log(f'Slack notification refused to send! Skipping notification..', "warning")
+
+        if not quiet and i == 10:
             Log(f'Slack ({endpoint}): "{text}"')
             Log("Slack Notification Sent!")
 
