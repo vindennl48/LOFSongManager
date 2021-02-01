@@ -1,14 +1,14 @@
 import json
 from pathlib import Path
 from src.Drive import Drive
+from src.TERMGUI.Log import Log
 from src.Settings import Settings
 from src.FileManagement.File import File
 
 
 # Definitions
-DATABASE_FILENAME     = "db.json"
-KEY_CLOUD_DATABASE_ID = "cloud_database_id"
-FILEPATH_LOCAL        = f'temp/{DATABASE_FILENAME}'
+DATABASE_FILENAME = "db.json"
+FILEPATH_LOCAL    = f'temp/{DATABASE_FILENAME}'
 
 DEFAULT_DATABASE = {
     "projects": {},
@@ -40,6 +40,10 @@ class Entry:
         reault = Database.get_entry(self.model, self.name).data
         if result:
             self.data = result
+
+    def destroy(self):
+        Log("Destroy function not yet set up!","warning")
+        Log.press_enter()
 
 
 class Database:
@@ -91,14 +95,8 @@ class Database:
         Drive.download(Database.cloud_id, FILEPATH_LOCAL)
 
     def get_cloud_id():
-        # Check if 'cloud_database_id' exists in .settings
-        result = Settings.get_key(KEY_CLOUD_DATABASE_ID)
+        result = Drive.get_id(DATABASE_FILENAME)
 
-        # If no id is found, lets find it
-        if not result:
-            result = Drive.get_id(DATABASE_FILENAME)
-
-        # if still no id is found, create new db.json file
         if not result:
             result = Database.create_database()
 
@@ -106,9 +104,6 @@ class Database:
         #  a new database on the cloud..
         if not result:
             raise Exception("Database.cloud_id can not be found!")
-
-        # Save id to settings
-        Settings.set_key(KEY_CLOUD_DATABASE_ID, result)
 
         return result
 

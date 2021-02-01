@@ -225,7 +225,17 @@ class Drive:
 
         if file:
             print("      Uploaded successfully!")
-            return Drive.get_id(filepath.name, root=parent)
+
+            # Try 5x to get the new ID from the file
+            i = 0
+            while i < 5:
+                id = Drive.get_id(filepath.name, root=parent)
+                if id:
+                    return id
+                i += 1
+
+            return False
+
         else:
             print(f'Failed to upload "{filepath.name}"!')
             return False

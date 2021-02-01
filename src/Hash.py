@@ -24,7 +24,7 @@ class Hash:
 
         if not project.entry.name in db:
             Log(f'No local hashes exist for song "{project.entry.name}"!',"warning")
-            Log.press_enter()
+            # Log.press_enter()
             return False
 
         return db[project.entry.name]

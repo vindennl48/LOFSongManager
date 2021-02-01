@@ -3,6 +3,7 @@ from pathlib import Path
 from src.dev import Dev
 from src.Hash import Hash
 from src.Database import Entry
+from src.TERMGUI.Log import Log
 
 
 # Definitions
@@ -13,7 +14,6 @@ TEMP               = Path("temp")
 PROJECT_MODEL      = "projects"
 DEFAULT_ENTRY_DATA = {
     "id":           None,
-    "filename":     None,
     "hash":         None,
     "project_type": "new_idea",  # active, new_idea, jam, archive
     "is_locked":    None,        # If mutex is locked, user's name will show up here
@@ -54,56 +54,45 @@ class Base:
         )
 
     def is_up_to_date(self):
-        # WE NEED A 'db.json' IN THE CACHE FOLDER WITH EXISTING HASHES
-        #  Hashing these every time is extremely slow!
+        # This function checks to see if the locally extracted project
+        #  is the most up-to-date project
+        Log("Checking for updates..")
 
-        # this should be in the default entry but if it's not
-        if not "hash" in self.entry.data:
-            self.entry.data["hash"] = None
-
-        # If there is no hash in the entry, this means project doesnt exist on cloud
-        if not self.entry.data["hash"]:
+        # If this project is no extracted, then we are not up-to-date
+        if not self.is_local():
+            Log("Project is not extracted")
             return False
 
-        # Compare local hash vs remote hash
-        if Hash.hash_file(self.get_cache_file()) == self.entry.data["hash"]:
+        # If this project is dirty, then we are up-to-date.
+        #  We don't want to accidentally overwrite our changes!
+        if self.is_dirty():
+            Log("Project is dirty")
+            return True
+
+        # If there is no remote, then it is up-to-date
+        if not self.is_remote():
+            Log("Project is not remote")
+            return True
+
+        # If there IS remote but not local cache, we are NOT up-to-date
+        if not self.is_cached():
+            Log("Project is not cached")
+            return False
+
+        # If we ARE extracted, AND remote, AND cached..
+        #  Lets check if the two hashes compare
+        local_hash = Hash.get_project_hash(self)
+        if not local_hash:
+            # We will need to re-download if local hash doesnt exist still
+            #  If we reach this, something went wrong and we have to re-download
+            return False
+
+        # If local and remote hashes match, we are up-to-date
+        if local_hash == self.entry.data["hash"]:
             return True
 
         # default return
         return False
-
-    # Is this the same as 'is_up_to_date' ?
-    def check_for_updates(self):
-        # Return true if updates exist
-
-        Log("Checking for updates..")
-
-        # If project doesnt exist on cloud, no update is possible
-        if not self.is_remote():
-            Log("No remote files found for this project")
-            # no errors, return function
-            return False
-
-        # If there is a local project, we need to check a few things
-        if self.is_local():
-            # If cache is already up to date, return function
-            if self.is_up_to_date():
-                Log("Project is already up to date!")
-                return False
-
-            if self.is_dirty():
-                Log("This project is dirty with pending updates!")
-
-                # ask if user wants to discard changes,
-                # if not then do not update
-                if not self.dialog_discard_changes():
-                    return False
-
-            # Remove old extracted project, lets start fresh
-            Folder.delete( self.get_root_dir() )
-
-        return True
-
 
     def is_local(self):
         # If the project is extracted to 'extracted_songs' directory
@@ -111,12 +100,35 @@ class Base:
 
     def is_cached(self):
         # If the project has a *.lof file in 'compressed_songs' directory
-        return self.get_cache_file().exists()
+        #  Must check if cache AND "hash" exist
+        if self.get_cache_file().exists():
+            if not Hash.get_project_hash(self):
+                Log(f'Project "{self.entry.name}" is cached but not hashed!',"warning")
+                Log.press_enter()
+                return False
+            return True
+        else:
+            if Hash.get_project_hash(self):
+                Log(f'Project "{self.entry.name}" is hashed but not cached!',"warning")
+                Log.press_enter()
+
+        return False
 
     def is_remote(self):
-        # If the project exists on the cloud yet
-        if "id" in self.entry.data and self.entry.data["id"]:
+        # If the project exists on the cloud
+        #  Must check if remote "id" AND "hash" both exist
+
+        if self.entry.data["id"]:
+            if not self.entry.data["hash"]:
+                Log(f'Project "{self.entry.name}" has remote ID but not remote hash!',"warning")
+                Log.press_enter()
+                return False
             return True
+        else:
+            if self.entry.data["hash"]:
+                Log(f'Project "{self.entry.name}" does not have remote ID but has remote cache!',"warning")
+                Log.press_enter()
+
         return False
 
     def is_locked(self):

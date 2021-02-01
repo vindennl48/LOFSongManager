@@ -1,6 +1,10 @@
 from src.Tar import Tar
 from src.dev import Dev
+from src.Hash import Hash
 from src.Drive import Drive
+from src.Audio import Audio
+from src.Slack import Slack
+from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 
@@ -35,6 +39,9 @@ class Compress:
             folderpath  = self.get_temp_dir(),
             destination = self.get_cache_file()
         )
+
+        # Set new local hash
+        Hash.set_project_hash(self)
 
         return True
 
@@ -77,7 +84,7 @@ class Compress:
                 mp3_id = Drive.upload(
                     filepath = mp3,
                     mimeType = Drive.mimeType["mp3"],
-                    parents  = mix_folder_id
+                    parent   = mix_folder_id
                 )
                 Slack.send_link(
                     link_name = f'Scratch for {self.entry.name}, "{mp3.name}"',
@@ -85,6 +92,8 @@ class Compress:
                 )
             else:
                 Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
+
+        return True
 
 
     ## DIALOGS ##

@@ -38,6 +38,8 @@ class Extract:
                 Folder.create( self.get_temp_dir()/location )
             Folder.create( self.get_root_dir()/location )
 
+        return True
+
     def move_temp_to_extracted_songs(self):
         # Convert mp3's to wav's
         for location in ["Media", "Bounces"]:
@@ -60,3 +62,5 @@ class Extract:
         Log("Copying over Studio One project file")
         File.recursive_overwrite( self.get_song_file(temp=True), self.get_song_file(temp=False) )
         File.recursive_overwrite( self.get_song_file(temp=True), self.get_song_file(version="original", temp=False) )
+
+        return True

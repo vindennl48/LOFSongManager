@@ -8,8 +8,8 @@ class Open:
         Log(f'Opening project "{self.entry.name}"..')
 
         # - Download any new updates / Download new project
-        if self.check_for_updates():
-            Log("Update to project available")
+        if not self.is_up_to_date():
+            Log("Project Update Available!")
             if not self.download_project():
                 Log("There was a problem downloading the update..","warning")
                 Log.press_enter()
