@@ -1,8 +1,13 @@
+from src.Tar import Tar
+from src.dev import Dev
+from src.Drive import Drive
+from src.FileManagement.File import File
+from src.FileManagement.Folder import Folder
 
 
 class Compress:
 
-    def compress_and_upload(self):
+    def compress_project(self):
         # Clean out temp project if it exists
         Log("Cleaning out temp folder")
         Folder.delete( self.get_temp_dir() )
@@ -10,8 +15,8 @@ class Compress:
         # Extract cache if it exists
         if self.is_cached():
             Tar.extract(
-                filepath    = self.compressed,
-                destination = Project.temp_parent
+                filepath    = self.get_cache_file(),
+                destination = self.get_temp_dir().parent
             )
         else:
             Folder.create( self.get_temp_dir() )
@@ -19,16 +24,19 @@ class Compress:
         # Create folders if they dont exist
         self.create_required_folders(temp=True)
 
-        # Create folder for mixdowns on cloud if it doesnt exist
-        if not Drive.get_id( self.entry.name ):
-            Drive.mkdir( self.entry.name )
-
         # Copy from 'extracted_songs' to 'temp'
         if not self.move_extracted_song_to_temp():
             Log("Could not move project from 'extracted_songs' to 'temp'..","warning")
             Log.press_enter()
             return False
 
+        # Compress project to *.lof
+        Tar.compress(
+            folderpath  = self.get_temp_dir(),
+            destination = self.get_cache_file()
+        )
+
+        return True
 
     def move_extracted_song_to_temp(self):
         for location in ["Media", "Bounces"]:

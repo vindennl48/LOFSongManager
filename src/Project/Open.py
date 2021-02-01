@@ -10,11 +10,15 @@ class Open:
         # - Download any new updates / Download new project
         if self.check_for_updates():
             Log("Update to project available")
-            if not self.download_and_extract():
+            if not self.download_project():
                 Log("There was a problem downloading the update..","warning")
                 Log.press_enter()
                 return False
-        else
+            if not self.extract_project():
+                Log("There was a problem extracting the project..","warning")
+                Log.press_enter()
+                return False
+        else:
             return False
 
         Log.press_enter()
@@ -47,37 +51,6 @@ class Open:
 
     ## HELPER FUNCS ##
 
-    def check_for_updates(self):
-        # Return true if updates exist
-
-        Log("Checking for updates..")
-
-        # If project doesnt exist on cloud, no update is possible
-        if not self.is_remote():
-            Log("No remote files found for this project")
-            # no errors, return function
-            return False
-
-        # If there is a local project, we need to check a few things
-        if self.is_local():
-            # If cache is already up to date, return function
-            if self.is_up_to_date():
-                Log("Project is already up to date!")
-                return False
-
-            if self.is_dirty():
-                Log("This project is dirty with pending updates!")
-
-                # ask if user wants to discard changes,
-                # if not then do not update
-                if not self.dialog_discard_changes():
-                    return False
-
-            # Remove old extracted project, lets start fresh
-            Folder.delete( self.get_root_dir() )
-
-        return True
-
     def open_studio_one(self):
         # Still need to make this one work
 
@@ -85,62 +58,10 @@ class Open:
         input()
         return True
 
-    def upload_project(self):
-        # We don't need to upload if there are no changes
-        if not self.is_dirty():
-            Log("There are no detected changes, can not upload!","warning")
-            Log.press_enter()
-            return False
-
-        # Make sure our project is the most up-to-date
-        if self.check_for_updates():
-            Log("There are updates for this project on the cloud!.. can not upload!","warning")
-            Log.press_enter()
-            return False
-
-        if not Dev.get("NO_OPEN_STUDIO_ONE"):
-            if self.dialog_remove_unused_audio_files():
-                if not self.open_studio_one():
-                    return False
-        else:
-            Log("Development Mode prevented Studio One from opening","alert")
-            Log.press_enter()
-
-        self.compress_and_upload()
-
-        return True
-
     ## END HELPER FUNCS ##
 
 
     ## DIALOGS ##
-
-    def dialog_discard_changes(self):
-        dialog = Dialog(
-            title = "Local Changes Detected!",
-            body  = [
-                f'There are locally saved changes that still exist!',
-                f'If you continue to update, these local changes will',
-                f'be erased.',
-                f'\n',
-                f'\n',
-                f'This can not be undone!',
-                f'\n',
-                f'\n',
-                f'If you would like to continue, type "yes" at the prompt.',
-                f'\n',
-                f'\n',
-                f'If you would like to open your local project instead,',
-                f'type "no" at the prompt.',
-                f'\n',
-                f'\n',
-            ]
-        )
-        ans = dialog.get_mult_choice( ["yes","no"] )
-
-        if ans == "yes":
-            return True
-        return False
 
     def dialog_project_locked(self):
         dialog = Dialog(

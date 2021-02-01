@@ -1,22 +1,12 @@
 from src.Tar import Tar
-from src.Drive import Drive
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 
 class Extract:
 
-    def download_and_extract(self):
-        Log("Downloading and extracting project")
-
-        # Download new cache
-        if not Drive.download( self.entry.data["id"], self.get_cache_file() ):
-            Log("An error occurred when trying to download the project..")
-            Log.press_enter()
-            # something went wrong while downloading
-            return False
-
-        # Update cache 'db.json' with new hash
+    def extract_project(self):
+        Log("Extracting project..")
 
         # Clean out temp project if it exists
         Log("Cleaning out temp folder")
