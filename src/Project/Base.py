@@ -72,6 +72,39 @@ class Base:
         # default return
         return False
 
+    # Is this the same as 'is_up_to_date' ?
+    def check_for_updates(self):
+        # Return true if updates exist
+
+        Log("Checking for updates..")
+
+        # If project doesnt exist on cloud, no update is possible
+        if not self.is_remote():
+            Log("No remote files found for this project")
+            # no errors, return function
+            return False
+
+        # If there is a local project, we need to check a few things
+        if self.is_local():
+            # If cache is already up to date, return function
+            if self.is_up_to_date():
+                Log("Project is already up to date!")
+                return False
+
+            if self.is_dirty():
+                Log("This project is dirty with pending updates!")
+
+                # ask if user wants to discard changes,
+                # if not then do not update
+                if not self.dialog_discard_changes():
+                    return False
+
+            # Remove old extracted project, lets start fresh
+            Folder.delete( self.get_root_dir() )
+
+        return True
+
+
     def is_local(self):
         # If the project is extracted to 'extracted_songs' directory
         return self.get_root_dir().exists()
@@ -136,3 +169,34 @@ class Base:
 
     ## END FILEPATHS ##
 
+
+    ## DIALOGS ##
+
+    def dialog_discard_changes(self):
+        dialog = Dialog(
+            title = "Local Changes Detected!",
+            body  = [
+                f'There are locally saved changes that still exist!',
+                f'If you continue to update, these local changes will',
+                f'be erased.',
+                f'\n',
+                f'\n',
+                f'This can not be undone!',
+                f'\n',
+                f'\n',
+                f'If you would like to continue, type "yes" at the prompt.',
+                f'\n',
+                f'\n',
+                f'If you would like to open your local project instead,',
+                f'type "no" at the prompt.',
+                f'\n',
+                f'\n',
+            ]
+        )
+        ans = dialog.get_mult_choice( ["yes","no"] )
+
+        if ans == "yes":
+            return True
+        return False
+
+    ## END DIALOGS ##
