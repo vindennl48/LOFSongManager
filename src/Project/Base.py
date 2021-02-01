@@ -16,7 +16,7 @@ DEFAULT_ENTRY_DATA = {
     "filename":     None,
     "hash":         None,
     "project_type": "new_idea",  # active, new_idea, jam, archive
-    "is_locked":    False,       # Flag to prevent more than 1 user to open, ie. mutex lock
+    "is_locked":    None,        # If mutex is locked, user's name will show up here
     "is_dirty":     []           # List usernames of those with dirty projects
 }
 
@@ -37,12 +37,21 @@ class Base:
         if Dev.get("ALL_IS_DIRTY"):
             return True
 
-        if self.get_song_file().exists() and self.get_song_file(version="original").exists():
-            return not filecmp.cmp(
-                self.get_song_file(),
-                self.get_song_file(version="original"),
-                shallow=False
-            )
+        if not self.get_song_file().exists():
+            Log("Studio One project file doesn't exist!","warning")
+            Log.press_enter()
+            raise Exception("Studio One project file doesn't exist!")
+
+        if not self.get_song_file(version="original").exists():
+            Log("Studio One 'original' project file doesn't exist!","warning")
+            Log.press_enter()
+            raise Exception("Studio One 'original' project file doesn't exist!")
+
+        return not filecmp.cmp(
+            self.get_song_file(),
+            self.get_song_file(version="original"),
+            shallow=False
+        )
 
     def is_up_to_date(self):
         # WE NEED A 'db.json' IN THE CACHE FOLDER WITH EXISTING HASHES
@@ -74,6 +83,11 @@ class Base:
     def is_remote(self):
         # If the project exists on the cloud yet
         if "id" in self.entry.data and self.entry.data["id"]:
+            return True
+        return False
+
+    def is_locked(self):
+        if "is_locked" in self.entry.data and self.entry.data["is_locked"]:
             return True
         return False
 
@@ -114,6 +128,11 @@ class Base:
         if temp:
             return self.get_temp_dir()/f'{self.entry.name}_{version}.song'
         return self.get_root_dir()/f'{self.entry.name}_{version}.song'
+
+    def get_dummy_db(self, location="Media", temp=False):
+        if temp:
+            return self.get_temp_dir()/location/"dummy.json"
+        return self.get_root_dir()/location/"dummy.json"
 
     ## END FILEPATHS ##
 
