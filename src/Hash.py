@@ -1,80 +1,52 @@
-import hashlib
+import hashlib, json
 from pathlib import Path
 from src.Drive import Drive
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
-from src.env import LOFSM_DIR_PATH
 
+
+# Definitions
+DATABASE_FILENAME = "hash.json"
+FILEPATH_LOCAL    = Path(f'compressed_songs/{DATABASE_FILENAME}')
+DEFAULT_DATABASE  = {}
 
 class Hash:
+    # This class only deals with the local cache'd compressed songs
+    #  To update the hash on the cloud/remote server, you must update
+    #  through the project's 'entry' object.
 
-    remote_db_fpath = f'{LOFSM_DIR_PATH}/db.json'
-    temp_db_fpath   = f'temp/db.json'
+    def initialize():
+        if not FILEPATH_LOCAL.exists():
+            Hash.create_database()
 
-    def __init__(self, filepath):
-        self.filepath = Path(filepath)
-        self.hash     = Hash.hash_file(filepath)
-        self.drive    = Drive()
+    def get_project_hash(project):
+        db = File.get_json(FILEPATH_LOCAL)
 
-    def remove(self):
-        self.drive.remove_json_key(
-            remote_file    = Hash.remote_db_fpath,
-            local_filepath = Hash.temp_db_fpath,
-            key            = self.filepath.name
-        )
-
-    def push(self):
-        # Make sure hash is up-to-date
-        self.re_hash()
-
-        # You must check this function during use!
-        if not self.hash:
-            Log(f'Can not push hash for "{self.filepath.name}"!', "warning")
-            Log(f'Local compressed project doesn\'t exist!', "warning")
+        if not project.entry.name in db:
+            Log(f'No local hashes exist for song "{project.entry.name}"!',"warning")
+            Log.press_enter()
             return False
 
-        # Create remote db.json if it doesn't exist
-        if not self.drive.get_info(self.remote_db_fpath):
-            File.set_json(
-                filepath = self.temp_db_fpath,
-                data     = {}
-            )
+        return db[project.entry.name]
 
-            self.drive.set_json(
-                remote_file    = self.remote_db_fpath,
-                local_filepath = self.temp_db_fpath
-            )
+    def set_project_hash(project):
+        hash = Hash.create_hash_from_project(project)
 
-        self.drive.set_json_key(
-            remote_file    = self.remote_db_fpath,
-            local_filepath = self.temp_db_fpath,
-            key            = self.filepath.name,
-            data           = self.hash
-        )
+        if not hash:
+            return False
+
+        File.set_json_key(FILEPATH_LOCAL, project.entry.name, hash)
 
         return True
 
-    def compare(self):
-        if not self.hash:
-            return False
+    def create_database():
+        # If database doesn't exist, make one
+        if not FILEPATH_LOCAL.exists():
+            with open(FILEPATH_LOCAL, "w") as f:
+                json.dump(DEFAULT_DATABASE, f, indent=4)
 
-        remote_hash = self.drive.get_json_key(
-            remote_file    = self.remote_db_fpath,
-            local_filepath = self.temp_db_fpath,
-            key            = self.filepath.name
-        )
-
-        if self.hash != remote_hash:
-            return False
-
-        return True
-
-    def re_hash(self):
-        self.hash = Hash.hash_file(self.filepath)
-
-    # Static
-    def hash_file(filepath):
-        filepath   = Path(filepath)
+    def create_hash_from_project(project):
+        filepath   = project.get_cache_file()
         BLOCK_SIZE = 1024*1024
         result     = hashlib.sha256()
 
@@ -89,3 +61,5 @@ class Hash:
 
         return result.hexdigest()
 
+
+Hash.initialize()
