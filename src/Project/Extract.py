@@ -1,4 +1,5 @@
 from src.Tar import Tar
+from src.Audio import Audio
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
@@ -8,16 +9,12 @@ class Extract:
     def extract_project(self):
         Log("Extracting project..")
 
-        # Clean out temp project if it exists
-        Log("Cleaning out temp folder")
-        Folder.delete( self.get_temp_dir() )
+        # Create required folders in 'extracted_songs'
+        self.create_required_folders()
 
         # Extract cache to 'temp' folder
         Log("Extracting project")
-        Tar.extract( self.get_cache_file(), self.get_temp_dir() )
-
-        # Create required folders in 'extracted_songs'
-        self.create_required_folders()
+        Tar.extract( self.get_cache_file(), self.get_temp_dir().parent )
 
         # Copy and convert from 'temp' to 'extracted_songs'
         if not self.move_temp_to_extracted_songs():
@@ -33,6 +30,17 @@ class Extract:
     def create_required_folders(self, temp=False):
         # Need to make sure these folders exist
         Log("Creating necessary folders")
+
+        if temp:
+            # Clean out temp dir
+            Folder.delete( self.get_temp_dir() )
+            Folder.create( self.get_temp_dir() )
+        else:
+            # Create new extracted dir, remove if exists
+            Folder.delete( self.get_root_dir() )
+            Folder.create( self.get_root_dir() )
+
+
         for location in ["Media","Bounces","Mixdown"]:
             if temp:
                 Folder.create( self.get_temp_dir()/location )
@@ -47,6 +55,7 @@ class Extract:
             if not Audio.folder_to_wav( self.get_temp_dir()/location, self.get_root_dir()/location ):
                 return False
 
+            # Copy over dummy.json
             Log(f'Copying over "{location}" dummy.json')
             if self.get_dummy_db(location, temp=True).exists():
                 File.recursive_overwrite(
