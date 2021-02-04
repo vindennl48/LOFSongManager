@@ -26,6 +26,11 @@ class Settings:
         Settings.create()
         return File.get_json_key(Settings.filepath.absolute(), key)
 
+    def delete_key(key):
+        settings = Settings.get_all()
+        settings.pop(key, None)
+        Settings.set_all(settings)
+
     def get_all():
         Settings.create()
         return File.get_json(Settings.filepath.absolute())
