@@ -1,6 +1,5 @@
 from decimal import Decimal
 from pathlib import Path
-from src.env import LOFSM_DIR_PATH
 from src.FileManagement.File import File
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
