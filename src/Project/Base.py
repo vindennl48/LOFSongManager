@@ -43,11 +43,11 @@ class Base:
             Log("Project is not extracted")
             return False
 
-        # If this project is dirty, then we are up-to-date.
-        #  We don't want to accidentally overwrite our changes!
-        if self.is_dirty():
-            Log("Project is dirty")
-            return True
+        ## If this project is dirty, then we are up-to-date.
+        ##  We don't want to accidentally overwrite our changes!
+        #if self.is_dirty():
+        #    Log("Project is dirty")
+        #    return True
 
         # If there is no remote, then it is up-to-date
         if not self.is_remote():
@@ -171,18 +171,14 @@ class Base:
                 f'There are locally saved changes that still exist!',
                 f'If you continue to update, these local changes will',
                 f'be erased.',
-                f'\n',
-                f'\n',
+                f'\n', f'\n',
                 f'This can not be undone!',
-                f'\n',
-                f'\n',
+                f'\n', f'\n',
                 f'If you would like to continue, type "yes" at the prompt.',
-                f'\n',
-                f'\n',
+                f'\n', f'\n',
                 f'If you would like to open your local project instead,',
                 f'type "no" at the prompt.',
-                f'\n',
-                f'\n',
+                f'\n', f'\n',
             ]
         )
         ans = dialog.get_mult_choice( ["yes","no"] )
