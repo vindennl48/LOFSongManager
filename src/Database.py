@@ -34,12 +34,16 @@ class Entry:
     def update(self):
         return Database.set_entry(self.model, self.name, self.data)
 
+    # Check to see if project exists in database, if it does, update entry
+    def sync(self):
+        result = Database.get_entry(self.model, self.name)
+        if result:
+            self.data = result.data
+
     # Pull down any updates from the cloud database
     def refresh(self):
         Database.refresh()
-        reault = Database.get_entry(self.model, self.name).data
-        if result:
-            self.data = result
+        self.sync()
 
     def destroy(self):
         Log("Destroy function not yet set up!","warning")
