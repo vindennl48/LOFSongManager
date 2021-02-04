@@ -12,7 +12,7 @@ class Dev:
         data = Dev._get_data()
 
         if key in data:
-            if data[key]:
+            if data[key] and key != "DEVELOPMENT":
                 Log(f'Development Mode: {key}',"warning")
                 Log.press_enter()
             return data[key]
