@@ -3,6 +3,7 @@ from pathlib import Path
 from src.Dev import Dev
 from src.Hash import Hash
 from src.TERMGUI.Log import Log
+from src.Settings import Settings
 
 
 # Definitions
@@ -115,6 +116,41 @@ class Base:
         if "is_locked" in self.entry.data and self.entry.data["is_locked"]:
             return self.entry.data["is_locked"]
         return False
+
+    def set_lock(self):
+        # Lets mutex lock this beach
+        # Only lock if there is no lock currently
+        if not self.is_locked():
+            self.entry.data["is_locked"] = Settings.get_username(capitalize=True)
+            self.entry.update()
+            return True
+        return False
+
+    def remove_lock(self):
+        # Lets undo the mutex lock
+        # Only unlock if we were the ones to lock it first!
+        if self.is_locked() == Settings.get_username(capitalize=True):
+            self.entry.data["is_locked"] = None
+            self.entry.update()
+            return True
+        return False
+
+    def set_dirty(self):
+        username = Settings.get_username(capitalize=True)
+        if username not in self.entry.data["is_dirty"]:
+            self.entry.data["is_dirty"].append(username)
+            self.entry.update()
+            return True
+        return False
+
+    def remove_dirty(self):
+        username = Settings.get_username(capitalize=True)
+        if username in self.entry.data["is_dirty"]:
+            self.entry.data["is_dirty"].remove(username)
+            self.entry.update()
+            return True
+        return False
+
 
     ## END TESTS ##
 
