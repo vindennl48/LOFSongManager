@@ -2,7 +2,6 @@ import filecmp
 from pathlib import Path
 from src.Dev import Dev
 from src.Hash import Hash
-from src.Database import Entry
 from src.TERMGUI.Log import Log
 
 
@@ -11,27 +10,8 @@ EXTRACTED          = Path("extracted_songs")
 CACHED             = Path("compressed_songs")
 TEMP               = Path("temp")
 
-PROJECT_MODEL      = "projects"
-DEFAULT_ENTRY_DATA = {
-    "id":           None,
-    "hash":         None,
-    "project_type": "new_idea",  # active, new_idea, jam, archive
-    "is_locked":    None,        # If mutex is locked, user's name will show up here
-    "is_dirty":     []           # List usernames of those with dirty projects
-}
-
 
 class Base:
-    def create_from_entry(entry):
-        project = Project(entry.name)
-        project.entry = entry
-        return project
-
-    def __init__(self, name):
-        self.entry = Entry(PROJECT_MODEL, name, DEFAULT_ENTRY_DATA)
-
-    ## TESTS ##
-
     def is_dirty(self):
         # If there is locally saved changes that have yet to be uploaded to the cloud
         if Dev.get("ALL_IS_DIRTY"):
@@ -133,7 +113,7 @@ class Base:
 
     def is_locked(self):
         if "is_locked" in self.entry.data and self.entry.data["is_locked"]:
-            return True
+            return self.entry.data["is_locked"]
         return False
 
     ## END TESTS ##
