@@ -1,3 +1,4 @@
+from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 
 class Dev:
@@ -11,6 +12,9 @@ class Dev:
         data = Dev._get_data()
 
         if key in data:
+            if data[key]:
+                Log(f'Development Mode: {key}',"warning")
+                Log.press_enter()
             return data[key]
         else:
             data[key] = False

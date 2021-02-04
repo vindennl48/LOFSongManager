@@ -37,8 +37,6 @@ class Folder:
         if not Dev.get("NO_CLEAR_TEMP"):
             Folder.clear("temp")
             Log("Temp directory cleared!")
-        else:
-            Log("Dev Mode prevented 'Folder.clear_temp' function","notice")
 
     def ls_folders(folderpath):
         folderpath = Path(folderpath)

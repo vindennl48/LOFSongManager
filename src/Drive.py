@@ -174,7 +174,6 @@ class Drive:
             parent = Drive.root_id
 
         if Dev.get("NO_UPLOAD"):
-            Log("Dev Mode prevented 'Drive.upload' function","notice")
             return True
 
         filepath = Path(filepath)
@@ -242,7 +241,6 @@ class Drive:
 
     def download(ID, save_path):
         if Dev.get("NO_DOWNLOAD"):
-            Log("Dev Mode prevented 'Drive.download' function","notice")
             return True
 
         save_path  = Path(save_path)

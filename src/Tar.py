@@ -21,8 +21,6 @@ class Tar:
                 Log(f'\n\n{e}\n\n', None)
                 Log.press_enter()
                 exit()
-        else:
-            Log("Dev Mode prevented 'Tar.compress' function","notice")
 
         Log(f'Finished compressing "{folderpath.stem}!"')
 
@@ -40,7 +38,5 @@ class Tar:
                 Log(f'\n\n{e}\n\n', None)
                 Log.press_enter()
                 exit()
-        else:
-            Log("Dev Mode prevented 'Tar.extract' function","notice")
 
         Log(f'Finished extracting "{filepath.stem}!"')

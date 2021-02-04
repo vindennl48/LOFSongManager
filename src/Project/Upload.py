@@ -24,9 +24,6 @@ class Upload:
             if self.dialog_remove_unused_audio_files():
                 if not self.open_studio_one():
                     return False
-        else:
-            Log("Development Mode prevented Studio One from opening","alert")
-            Log.press_enter()
 
         # Create folder for mixdowns on cloud if it doesnt exist
         if not Drive.get_id( self.entry.name ):
@@ -55,9 +52,6 @@ class Upload:
             self.entry.update()
 
             Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
-
-        else:
-            Log("NO_LOF_UPLOAD is active, will not upload new projects","warning")
 
         # Cleanup
         Folder.clear_temp()
