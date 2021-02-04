@@ -18,15 +18,12 @@ class Open:
                 Log("There was a problem extracting the project..","warning")
                 Log.press_enter()
                 return False
-        else:
-            return False
-
-        Log.press_enter()
 
         # Check for mutex lock
         if self.is_locked():
             # Provide dialog to alert user that they can't save
-            self.dialog_project_locked()
+            if not self.dialog_project_locked():
+                return True
 
         # - Open Studio One Project
         if not self.open_studio_one():
@@ -41,13 +38,39 @@ class Open:
                 self.get_song_file()
             )
         elif self.is_dirty():
-            # Lets upload our changes!
-            if not self.upload_project():
-                Log("An error occurred when trying to upload the project!","warning")
-                Log.press_enter()
-                return False
+            ans = self.dialog_upload_clear_cancel()
+
+            if ans == "upload":
+                # Lets upload our changes!
+                if not self.upload_project():
+                    Log("An error occurred when trying to upload the project!","warning")
+                    Log.press_enter()
+                    return False
+            elif ans == "clear":
+                Folder.delete(self.get_root_dir())
 
         return True
+
+    def create_menu_item(self):
+        name   = [ self.entry.name.ljust(28)[:28] ]
+        result = []
+
+        if self.is_remote() and not self.is_local():
+            name.append("- New!")
+        elif self.is_remote() and self.is_local() and not self.is_up_to_date():
+            name.append("- Update Available")
+        elif not self.is_remote():
+            name.append("- Not Uploaded")
+
+        result.append(" ".join(name))
+
+        if self.is_locked():
+            result.append(f'          # LOCKED by {self.entry.data["is_locked"]}')
+        if self.entry.data["is_dirty"]:
+            result.append(f'          # NON-Uploaded changes by { ", ".join(self.entry.data["is_dirty"]) }')
+
+        return "\n".join(result)
+
 
     ## HELPER FUNCS ##
 
@@ -65,14 +88,46 @@ class Open:
 
     def dialog_project_locked(self):
         dialog = Dialog(
-            title = "Project is Locked!",
+            title = f'Project is Locked by {self.entry.data["is_locked"]}!',
             body  = [
                 f'This project is currently being worked on by another user!',
                 f'To maintain project integrity, you will still be able to open',
                 f'this project, however, you will NOT be able to save any changes!',
-                f'\n',
-                f'\n',
+                f'\n', f'\n',
+                f'Do you still wish to open this project?',
+                f'\n', f'\n',
             ]
-        ).press_enter()
+        )
+
+        if dialog.get_mult_choice(["y","n"]) == "n":
+            return False
+        return True
+
+    def dialog_upload_clear_cancel(self):
+        result = False
+
+        while not result:
+            result = True
+
+            dialog = Dialog(
+                title = "Upload or Clear Changes!",
+                body  = [
+                    f'Because changes were detected, you have a couple options..',
+                    f'\n', f'\n',
+                    f'You can either:', f'\n',
+                    f' - Upload your project to the cloud', f'\n',
+                    f' - Clear any changes you recently made', f'\n',
+                    f' - Cancel, keep local changes but do not upload', f'\n',
+                    f'   WARNING: This will create a dirty project! May', f'\n',
+                    f'            cause a loss of data in the future!',
+                    f'\n', f'\n',
+                ]
+            )
+            ans = dialog.get_mult_choice(["upload","clear","cancel"])
+
+            if ans == "clear" and not dialog.confirm():
+                result = False
+
+        return ans
 
     ## END DIALOGS ##
