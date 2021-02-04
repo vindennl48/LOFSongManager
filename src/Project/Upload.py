@@ -8,12 +8,6 @@ from src.FileManagement.Folder import Folder
 
 class Upload:
     def upload_project(self):
-        # We don't need to upload if there are no changes
-#        if not self.is_dirty():
-#            Log("There are no detected changes, No upload needed!","warning")
-#            Log.press_enter()
-#            return False
-
         # Make sure our project is the most up-to-date
         if not self.is_up_to_date():
             Log("There are updates for this project on the cloud!.. can not upload!","warning")
@@ -48,7 +42,7 @@ class Upload:
 
             # Update remote hash if file was successfully uploaded
             self.entry.data["id"]   = result
-            self.entry.data["hash"] = Hash.get_project_hash(self)
+            self.entry.data["hash"] = Hash.get_project_hash(self) # Hash is created in self.compress_project()
             self.entry.update()
 
             Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
