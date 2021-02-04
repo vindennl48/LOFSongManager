@@ -1,11 +1,11 @@
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
-from src.Project import Project
+from src.Project.Index import Index as ProjectIndex
 
 def menu_open_project():
     Log("Gathering projects, please wait..", "notice")
 
-    projects = Project.get_all_projects()
+    projects = ProjectIndex.get_all_projects()
 
     menu = Menu(
         title   = "What project would you like to open?",
@@ -17,4 +17,4 @@ def menu_open_project():
     if result == "back":
         return True
     else:
-        return projects[result].open()
+        return projects[result].open_project()
