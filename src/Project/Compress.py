@@ -41,13 +41,12 @@ class Compress:
         )
 
         # Set new local hash
-        Hash.set_project_hash(self)
+        Hash.set_project_hash(self, Hash.create_hash_from_project(self))
 
         return True
 
     def move_extracted_song_to_temp(self):
         for location in ["Media", "Bounces"]:
-
             # Remove unused cached audio from location
             # Garbage collector for unused audio files
             mp3s      = Folder.ls_files( self.get_temp_dir()/location, "mp3" )
@@ -69,12 +68,10 @@ class Compress:
                     self.get_dummy_db(location, temp=True),
                 )
 
-        # Upload scratch files and mixdowns
+        # Upload scratch files and mixdowns to the cloud
         mp3s = Folder.ls_files( self.get_temp_dir()/"Media", "mp3", "Scratch*" )
         mp3s.extend( Folder.ls_files( self.get_temp_dir()/"Media", "mp3", "SCRATCH*" ) )
-
-        # NEED SOME WAY TO MERGE IN MIXDOWNS IN HERE TO NOT DUPLICATE CODE!
-        mp3s.extend( Folder.ls_files( self.get_temp_dir()/"Mixdown", "mp3" ) )
+        mp3s.extend( Folder.ls_files( self.get_root_dir()/"Mixdown", "mp3" ) )
 
         for mp3 in mp3s:
             mix_folder_id = Drive.get_id( self.entry.name )
@@ -92,6 +89,13 @@ class Compress:
                 )
             else:
                 Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
+
+        # Copy over mixdowns to temp
+        Log("Copying over 'Mixdown' mp3's")
+        Folder.copy( self.get_root_dir()/"Mixdown", self.get_temp_dir()/"Mixdown" )
+
+        # Lastly, copy over the song file
+        File.recursive_overwrite( self.get_song_file(temp=False), self.get_song_file(temp=True) )
 
         return True
 
