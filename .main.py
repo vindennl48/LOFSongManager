@@ -18,9 +18,6 @@ if __name__ == '__main__':
     # Create settings file if it doesn't exist
     Settings.create()
 
-    # Check version
-    Update.check_version()
-
     # Start main menu
     try:
         menu_main()

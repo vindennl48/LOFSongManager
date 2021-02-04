@@ -47,7 +47,7 @@ class Settings:
 
         if not version:
             version = "0.0"
-            Settings.set_key("version", version)
+            Settings.set_version(version)
 
         return Decimal(version)
 

@@ -15,27 +15,7 @@ class Update:
             return True
 
         Update.pull_updates_from_git()
-        result = Update.run_migrations()
-
-        return result
-
-    def check_version():
-        if Decimal(VERSION) != Settings.get_version():
-            Log(f'env-Version: {Decimal(VERSION)} | Settings-Version: {Settings.get_version()}',"warning")
-            Dialog(
-                title = "Version Mismatch!",
-                body  = [
-                    f'src.env.VERSION does not match the current version!',
-                    f'The version number was not updated properly.',
-                    f'\n',
-                    f'\n',
-                    f'Please notify your administrator!',
-                    f'\n',
-                    f'\n',
-                ],
-                clear = False
-            )
-            Log.press_enter()
+        return Update.run_migrations()
 
     def pull_updates_from_git():
         Run.prg("git", "pull --rebase")
@@ -61,8 +41,14 @@ class Update:
                 ans = Run.prg("python", migration.absolute(), useSubprocess=True)
 
                 if ans == 0:
-                    raise Exception(f'There was a problem loading this migration file!\n "{migration.absolute()}"')
+                    Slack.upload_log()
+                    Log(f'There was a problem loading this migration file!\n "{migration.absolute()}"',"warning")
+                    Log.press_enter()
+                    # If there was an issue upgrading the migration, we don't want to set the new version
+                    return False
                 elif ans != 1:
+                    Log("You must restart the program to finish the update!","notice")
+                    Log.press_enter()
                     result = False
 
                 Settings.set_version(migration_version)
