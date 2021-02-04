@@ -1,6 +1,6 @@
 import os, shutil
 from glob import glob
-from src.dev import Dev
+from src.Dev import Dev
 from pathlib import Path
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File

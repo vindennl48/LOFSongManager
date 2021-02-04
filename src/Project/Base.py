@@ -1,6 +1,6 @@
 import filecmp
 from pathlib import Path
-from src.dev import Dev
+from src.Dev import Dev
 from src.Hash import Hash
 from src.Database import Entry
 from src.TERMGUI.Log import Log

@@ -39,6 +39,9 @@ if __name__ == "__main__":
     )
     dialog.press_enter()
 
+    # Rename src/dev.py to src/Dev.py
+    File.rename("src/dev.py", "Dev.py")
+
     # Remove 'env.py' in favor of .settings file
     File.delete("src/env.py")
 

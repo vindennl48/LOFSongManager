@@ -1,4 +1,4 @@
-from src.dev import Dev
+from src.Dev import Dev
 from src.Hash import Hash
 from src.Slack import Slack
 from src.Drive import Drive

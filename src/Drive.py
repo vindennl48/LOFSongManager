@@ -1,6 +1,6 @@
 import os, io, pickle, shutil
 from pathlib import Path
-from src.dev import Dev
+from src.Dev import Dev
 from src.TERMGUI.Log import Log
 from src.Settings import Settings
 from src.TERMGUI.Dialog import Dialog

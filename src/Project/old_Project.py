@@ -1,7 +1,7 @@
 import time, filecmp
 from glob import glob
 from pathlib import Path
-from src.dev import Dev
+from src.Dev import Dev
 from src.Audio import Audio
 from src.DummyFiles import DummyFiles
 from src.Drive import Drive

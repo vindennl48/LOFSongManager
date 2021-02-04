@@ -61,6 +61,10 @@ class File(FileEdit):
 
         return result
 
+    def rename(filepath, new_name):
+        filepath = Path(filepath)
+        filepath.rename(new_name)
+
 
     def get_json(filepath):
         filepath = Path(filepath)

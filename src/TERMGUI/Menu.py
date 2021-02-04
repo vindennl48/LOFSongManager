@@ -1,5 +1,5 @@
 from src.env import VERSION
-from src.dev import Dev
+from src.Dev import Dev
 from src.TERMGUI.Term import Term
 from src.TERMGUI.Log import Log
 
