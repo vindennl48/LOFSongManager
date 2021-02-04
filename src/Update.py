@@ -6,7 +6,6 @@ from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 from src.Settings import Settings
-from src.env import VERSION
 # from src.slack.notify import Notify as Slack
 
 class Update:
