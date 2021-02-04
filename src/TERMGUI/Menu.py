@@ -1,4 +1,4 @@
-from src.env import VERSION
+from src.Settings import Settings
 from src.Dev import Dev
 from src.TERMGUI.Term import Term
 from src.TERMGUI.Log import Log
@@ -22,7 +22,9 @@ class Menu:
         ]
 
         if Menu.notice:
+            self.stack.insert(1, "")
             self.stack.insert(1, self.create_notice())
+            self.stack.insert(1, "")
 
         return self
 
@@ -47,7 +49,7 @@ class Menu:
     def create_banner(self):
         title = [
             f'##################################################',
-            f'LOFSongManager V{VERSION}'.center(50),
+            f'LOFSongManager V{Settings.get_version()}'.center(50),
             f'##################################################',
         ]
 
@@ -68,7 +70,12 @@ class Menu:
         stack = []
 
         for i, option in enumerate(options, start=1):
-            stack.append(f'   {i}) {option}')
+            if (i < 10):
+                stack.append(f'    {i}) {option}')
+            elif (i < 100):
+                stack.append(f'   {i}) {option}')
+            else:
+                stack.append(f'  {i}) {option}')
 
         stack.append(f'')
 
