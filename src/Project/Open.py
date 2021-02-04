@@ -1,4 +1,7 @@
+from src.Dev import Dev
 from src.TERMGUI.Log import Log
+from src.TERMGUI.Run import Run
+from src.Settings import Settings
 from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
@@ -20,34 +23,49 @@ class Open:
                 return False
 
         # Check for mutex lock
-        if self.is_locked():
+        mutex = self.is_locked()
+        if mutex and mutex != Settings.get_username(capitalize=True):
             # Provide dialog to alert user that they can't save
             if not self.dialog_project_locked():
                 return True
+        else:
+            # Lets mutex lock this beach
+            self.set_lock()
 
         # - Open Studio One Project
         if not self.open_studio_one():
             return False
 
-        # Check for mutex lock
-        if self.is_locked() and self.is_dirty():
-            # Remove any saved changes
-            Log("Removing saved data from locked project..")
-            File.recursive_overwrite(
-                self.get_song_file(version="original"),
-                self.get_song_file()
-            )
-        elif self.is_dirty():
-            ans = self.dialog_upload_clear_cancel()
+        if self.is_dirty():
+            # Check for mutex lock
+            mutex = self.is_locked()
 
-            if ans == "upload":
-                # Lets upload our changes!
-                if not self.upload_project():
-                    Log("An error occurred when trying to upload the project!","warning")
-                    Log.press_enter()
-                    return False
-            elif ans == "clear":
-                Folder.delete(self.get_root_dir())
+            if mutex and mutex != Settings.get_username(capitalize=True):
+                # Project was locked by someone else
+                # Remove any saved changes
+                Log("Resetting project.. Undoing changes..")
+                self.extract_project()
+            else:
+                ans = self.dialog_upload_clear_cancel()
+                if ans == "y":
+                    # Lets upload our changes!
+                    if not self.upload_project():
+                        Log("An error occurred when trying to upload the project!","warning")
+                        Log.press_enter()
+                        return False
+                    # Remove our name from the dirty list if it exists
+                    self.remove_dirty()
+                elif ans == "clear":
+                    self.extract_project()
+                    # Remove our name from the dirty list if it exists
+                    self.remove_dirty()
+                else:
+                    # The user is not uploading new changes..
+                    # Make sure to set the project to dirty!
+                    self.set_dirty()
+
+                # Remove the lock we placed on when opening the project
+                self.remove_lock()
 
         return True
 
@@ -75,10 +93,32 @@ class Open:
     ## HELPER FUNCS ##
 
     def open_studio_one(self):
-        # Still need to make this one work
+        Log("OPENING STUDIO ONE","notice")
 
-        print("OPENING STUDIO ONE")
-        input()
+        # First create a temp version of the project
+        File.recursive_overwrite( self.get_song_file(), self.get_song_file(version="temp") )
+
+        Dialog(
+            title = "Wait for Studio One to close!",
+            body  = "DO NOT CLOSE THIS WINDOW!!"
+        )
+
+        if Dev.get("NO_OPEN_STUDIO_ONE"):
+            # Do not open studio one
+            return True
+
+        ans = Run.prg(
+            alias   = "open",
+            command = f'{ self.get_song_file(version="temp") }',
+            wait    = True
+        )
+
+        if ans != 0:
+            return False
+
+        File.recursive_overwrite( self.get_song_file(version="temp"), self.get_song_file() )
+        File.delete( self.get_song_file(version="temp") )
+
         return True
 
     ## END HELPER FUNCS ##
@@ -115,15 +155,16 @@ class Open:
                     f'Because changes were detected, you have a couple options..',
                     f'\n', f'\n',
                     f'You can either:', f'\n',
-                    f' - Upload your project to the cloud', f'\n',
-                    f' - Clear any changes you recently made', f'\n',
-                    f' - Cancel, keep local changes but do not upload', f'\n',
-                    f'   WARNING: This will create a dirty project! May', f'\n',
-                    f'            cause a loss of data in the future!',
+                    f' - "y":       Upload your project to the cloud', f'\n',
+                    f' - "clear":   clear any changes you recently made', f'\n',
+                    f' - "cancel":, keep local changes but do not upload', f'\n',
+                    f'              WARNING: This will create a dirty', f'\n',
+                    f'              project! May cause a loss of data', f'\n'
+                    f'              in the future!',
                     f'\n', f'\n',
                 ]
             )
-            ans = dialog.get_mult_choice(["upload","clear","cancel"])
+            ans = dialog.get_mult_choice(["y","clear","cancel"])
 
             if ans == "clear" and not dialog.confirm():
                 result = False
