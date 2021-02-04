@@ -29,9 +29,7 @@ class Hash:
 
         return db[project.entry.name]
 
-    def set_project_hash(project):
-        hash = Hash.create_hash_from_project(project)
-
+    def set_project_hash(project, hash):
         if not hash:
             return False
 
