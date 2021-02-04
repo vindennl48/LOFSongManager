@@ -1,3 +1,4 @@
+from src.Hash import Hash
 from src.Drive import Drive
 from src.TERMGUI.Log import Log
 
@@ -13,5 +14,8 @@ class Download:
             # something went wrong while downloading
             return False
 
-        # Update cache 'db.json' with new hash
+        # Update local cache 'db.json' with new hash
+        Hash.set_project_hash(self, self.entry.data["hash"])
+
+        return True
 
