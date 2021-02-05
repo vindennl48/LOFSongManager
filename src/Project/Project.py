@@ -6,6 +6,7 @@ from src.Project.Download import Download
 from src.Project.Extract import Extract
 from src.Project.Compress import Compress
 from src.Project.Open import Open
+from src.Project.Dummy import Dummy
 
 # Definitions
 PROJECT_MODEL      = "projects"
@@ -18,7 +19,7 @@ DEFAULT_ENTRY_DATA = {
 }
 
 
-class Project(Base, Upload, Download, Extract, Compress, Open):
+class Project(Base, Upload, Download, Extract, Compress, Open, Dummy):
     def create_from_entry(entry):
         project = Project(entry.name)
         project.entry = entry
