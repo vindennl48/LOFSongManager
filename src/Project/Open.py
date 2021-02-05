@@ -36,7 +36,15 @@ class Open:
         if not self.open_studio_one():
             return False
 
-        if self.is_dirty():
+        if not self.is_remote():
+            # Lets ask if user wants to upload project
+            if self.dialog_upload_new_project():
+                if not self.upload_project():
+                    Log("An error occurred when trying to upload the project!","warning")
+                    Log.press_enter()
+                    return False
+
+        elif self.is_dirty():
             # Check for mutex lock
             mutex = self.is_locked()
 
@@ -64,8 +72,8 @@ class Open:
                     # Make sure to set the project to dirty!
                     self.set_dirty()
 
-                # Remove the lock we placed on when opening the project
-                self.remove_lock()
+        # Remove the lock we placed on when opening the project
+        self.remove_lock()
 
         return True
 
@@ -107,15 +115,23 @@ class Open:
             # Do not open studio one
             return True
 
+        # Build the dummy files
+        self.set_dummy_files()
+
+        # Open Studio One
         ans = Run.prg(
             alias   = "open",
             command = f'{ self.get_song_file(version="temp") }',
             wait    = True
         )
 
+        # Remove dummy files
+        self.remove_dummy_files()
+
         if ans != 0:
             return False
 
+        # Copy over any saved data to the original song file
         File.recursive_overwrite( self.get_song_file(version="temp"), self.get_song_file() )
         File.delete( self.get_song_file(version="temp") )
 
@@ -155,12 +171,12 @@ class Open:
                     f'Because changes were detected, you have a couple options..',
                     f'\n', f'\n',
                     f'You can either:', f'\n',
-                    f' - "y":       Upload your project to the cloud', f'\n',
-                    f' - "clear":   clear any changes you recently made', f'\n',
-                    f' - "cancel":, keep local changes but do not upload', f'\n',
-                    f'              WARNING: This will create a dirty', f'\n',
-                    f'              project! May cause a loss of data', f'\n'
-                    f'              in the future!',
+                    f' - "y":      Upload your project to the cloud', f'\n',
+                    f' - "clear":  clear any changes you recently made', f'\n',
+                    f' - "cancel": keep local changes but do not upload', f'\n',
+                    f'             WARNING: This will create a dirty', f'\n',
+                    f'             project! May cause a loss of data', f'\n'
+                    f'             in the future!',
                     f'\n', f'\n',
                 ]
             )
@@ -170,5 +186,21 @@ class Open:
                 result = False
 
         return ans
+
+    def dialog_upload_new_project(self):
+        dialog = Dialog(
+            title = "Upload Project!",
+            body  = [
+                f'You have not uploaded this project yet to the cloud..',
+                f'\n', f'\n',
+                f'Would you like to upload this project?',
+                f'\n', f'\n',
+            ]
+        )
+        ans = dialog.get_mult_choice(["y","n"])
+
+        if ans == "y":
+            return True
+        return False
 
     ## END DIALOGS ##
