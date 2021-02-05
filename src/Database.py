@@ -26,6 +26,8 @@ class Entry:
     # Trying to make this like a postgres rails setup
 
     def __init__(self, model, name, data):
+        # If importing a dictionary or list via 'data' argument..
+        # Make sure you use 'from copy import deepcopy' !!!
         self.model = model
         self.name  = name
         self.data  = data

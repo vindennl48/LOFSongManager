@@ -1,3 +1,4 @@
+from copy import deepcopy
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 
@@ -60,6 +61,6 @@ class Dummy:
             folder     = self.get_root_dir()/folder
             dummy_json = folder/"dummy.json"
             if not dummy_json.exists():
-                data = DEFAULT_DUMMY_JSON
+                data = deepcopy(DEFAULT_DUMMY_JSON)
                 File.set_json(dummy_json, data)
 

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from src.Database import Entry
 from src.TERMGUI.Menu import Menu
 
@@ -28,7 +29,7 @@ class Project(Base, Upload, Download, Extract, Compress, Open, Dummy, Delete):
         return project
 
     def __init__(self, name):
-        self.entry = Entry(PROJECT_MODEL, name, DEFAULT_ENTRY_DATA)
+        self.entry = Entry(PROJECT_MODEL, name, deepcopy(DEFAULT_ENTRY_DATA))
         # Check to see if this already exists online
         self.entry.sync()
 
