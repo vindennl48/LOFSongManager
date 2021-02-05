@@ -1,12 +1,12 @@
 from glob import glob
-from decimal import Decimal
-from pathlib import Path
 from src.Dev import Dev
+from pathlib import Path
+from decimal import Decimal
+from src.Slack import Slack
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
-from src.TERMGUI.Dialog import Dialog
 from src.Settings import Settings
-# from src.slack.notify import Notify as Slack
+from src.TERMGUI.Dialog import Dialog
 
 class Update:
     def run():
