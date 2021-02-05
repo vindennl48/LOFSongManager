@@ -40,6 +40,9 @@ if __name__ == "__main__":
         )
         dialog.press_enter()
 
+        # Rename src/dev.py to src/Dev.py
+        File.rename("src/dev.py", "Dev.py")
+
         Log("A restart is needed to update the core!","notice")
         Log("Please ignore the following error message and restart the program.","sub")
         Log.press_enter()
@@ -60,9 +63,6 @@ if __name__ == "__main__":
 
     # Now that we have updated the core, we can continue with the rest of the update!
     Settings.delete_key("update_git")
-
-    # Rename src/dev.py to src/Dev.py
-    File.rename("src/dev.py", "Dev.py")
 
     # Remove 'env.py' in favor of .settings file
     File.delete("src/env.py")
