@@ -51,9 +51,6 @@ class Upload:
 
             Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
 
-        # Cleanup
-        Folder.clear_temp()
-
         Log("Compression and upload complete!", "notice")
 
         return True

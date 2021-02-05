@@ -8,7 +8,7 @@ from src.FileManagement.File import File
 
 # Definitions
 DATABASE_FILENAME = "db.json"
-FILEPATH_LOCAL    = f'temp/{DATABASE_FILENAME}'
+FILEPATH_LOCAL    = Path(f'temp/{DATABASE_FILENAME}')
 
 DEFAULT_DATABASE = {
     "projects": {},
@@ -59,7 +59,14 @@ class Database:
         # Download a fresh version of the database
         Database.refresh()
 
+    # Just in case the database was erased
+    def local_check():
+        if not FILEPATH_LOCAL.exists():
+            Database.refresh()
+
     def get_entry(model, name):
+        Database.local_check()
+
         db = File.get_json(FILEPATH_LOCAL)
 
         if model in db:
@@ -69,6 +76,8 @@ class Database:
         return None
 
     def get_all(model):
+        Database.local_check()
+
         db = File.get_json(FILEPATH_LOCAL)
         entries = None
 
@@ -111,7 +120,9 @@ class Database:
         Drive.download(Database.cloud_id, FILEPATH_LOCAL)
 
     def push():
-        return Drive.upload(FILEPATH_LOCAL, Drive.mimeType["json"])
+        if FILEPATH_LOCAL.exists():
+            return Drive.upload(FILEPATH_LOCAL, Drive.mimeType["json"])
+        return False
 
     def get_cloud_id():
         result = Drive.get_id(DATABASE_FILENAME)
