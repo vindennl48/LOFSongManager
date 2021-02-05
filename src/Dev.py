@@ -1,9 +1,10 @@
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 
-class Dev:
+# Definitions
+FILEPATH = ".dev"
 
-    filepath = ".dev"
+class Dev:
 
     def isDev():
         return Dev.get("DEVELOPMENT")
@@ -12,25 +13,30 @@ class Dev:
         data = Dev._get_data()
 
         if key in data:
+
+            if "DEVELOPMENT" in data and not data["DEVELOPMENT"]:
+                return False
+
             if data[key] and key != "DEVELOPMENT":
                 Log(f'Development Mode: {key}',"warning")
                 Log.press_enter()
+
             return data[key]
         else:
             data[key] = False
-            File.set_json(Dev.filepath, data)
+            File.set_json(FILEPATH, data)
             return False
 
     # PRIVATE
 
     def _get_data():
-        json_file = File.get_json(Dev.filepath)
+        json_file = File.get_json(FILEPATH)
 
         if not json_file:
             json_file = { "DEVELOPMENT": False, }
 
             File.set_json(
-                filepath = Dev.filepath,
+                filepath = FILEPATH,
                 data     = json_file
             )
 
