@@ -3,7 +3,6 @@ from pathlib import Path
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
-from src.DummyFiles import DummyFiles
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 from src.Settings import Settings
@@ -19,103 +18,12 @@ class Audio:
 
         mp3            = self.filepath
         wav            = Path(f'{folderpath.absolute()}/{mp3.stem}.wav')
-        dummy_files    = DummyFiles(folderpath)
-        dummy_max      = 0
-        dummy_list     = dummy_files.get_list()
         stem, num, ext = File.split_name(wav.name)
 
-        if dummy_files.is_in_max(stem):
-            dummy_max  = dummy_files.get_max()[stem]
-
-        if wav.is_file() and num <= dummy_max and not wav.name in dummy_list:
+        if wav.is_file():
             # File already exists locally, do not do anything
             Log(f'File "{wav.name}" already exists, keeping local file.')
             return True
-
-        elif wav.is_file() and num > dummy_max:
-            if dummy_max == 0:
-                wav_old = Path(f'{folderpath.absolute()}/{stem}_old.{ext}')
-            else:
-                wav_old = Path(f'{folderpath.absolute()}/{stem}_old({num}).{ext}')
-
-            Dialog(
-                title = "Warning! Audio File Conflict Found!",
-                body  = [
-                    f'Because the audio file "{wav.name}" exists in your local',
-                    f'project as well as the cloud project you are trying to',
-                    f'download.. We need to figure out which one to keep!',
-                    f'\n',
-                    f'\n',
-                    f'This software will take the current local version of',
-                    f'"{wav.name}" and rename it to "{wav_old.name}".',
-                    f'Then copy the new audio file into the pool.  You will have',
-                    f'to go into the project and figure out which audio file is',
-                    f'the correct one!',
-                    f'\n',
-                    f'\n',
-                    f'Usually, this occurs when recording to the wrong track.',
-                    f'Please make sure you only record to tracks that have your',
-                    f'own name in them!',
-                    f'\n',
-                    f'\n',
-                    f'You will have to either delete this *_old* file or rename',
-                    f'it and re-link inside Studio One before you will be allowed',
-                    f'to upload to the cloud again!',
-                    f'\n',
-                    f'\n',
-                ],
-                clear = False
-            ).press_enter()
-
-            if not wav_old.exists():
-                File.recursive_overwrite(
-                    src  = wav.absolute(),
-                    dest = wav_old.absolute()
-                )
-                File.delete(wav)
-
-            else:
-                Dialog(
-                    title = f'Error! "{wav_old.name}" Already Exists!',
-                    body = [
-                        f'The previous audio file conflict must be resolved',
-                        f'before you can continue!',
-                        f'\n',
-                        f'\n',
-                        f'To resolve this conflict, you must either rename the file',
-                        f'\n',
-                        f'\n',
-                        f' - "{wav_old.absolute()}"',
-                        f'\n',
-                        f'\n',
-                        f'to something else and re-link the newly',
-                        f'renamed file inside Studio One, or delete this file!',
-                        f'\n',
-                        f'\n',
-                    ],
-                    clear = False
-                ).press_enter()
-
-                return False
-
-        else:
-            if wav.name in dummy_list:
-                Dialog(
-                    title = "Warning! Dummy File Conflict!",
-                    body  = [
-                        f'Audio file "{wav.name}" exists locally as a dummy file!',
-                        f'This means that the last user that uploaded this project',
-                        f'recorded over a dummy file.',
-                        f'\n',
-                        f'\n',
-                        f'Even though no audio data has been lost, this could mean',
-                        f'that a serious error has occurred and should be reported',
-                        f'to your administrator.',
-                        f'\n',
-                        f'\n',
-                    ],
-                    clear = False
-                ).press_enter()
 
         Run.ffmpeg(
             args        = "-i",
@@ -130,8 +38,6 @@ class Audio:
 
         wav         = self.filepath
         mp3         = Path(f'{folderpath.absolute()}/{wav.stem}.mp3')
-        dummy_files = DummyFiles(wav.parent)
-        dummy_list  = dummy_files.get_list()
         username    = Settings.get_username()
 
         if "_old" in wav.name:
@@ -147,10 +53,6 @@ class Audio:
                 clear = False
             ).press_enter()
             return False
-
-        # Don't upload dummy files
-        if wav.name in dummy_list:
-            return True
 
         if not mp3.is_file():
             if not username in wav.name.lower() and not username_ignore:
