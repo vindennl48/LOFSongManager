@@ -88,7 +88,7 @@ class Menu:
     def get_result(self):
         ans = input(f'   : ').lower()
 
-        if ans == "b":
+        if ans == "b" and self.back:
             print(f'')
             return "back"
         elif ans.isnumeric() and int(ans) <= len(self.options):

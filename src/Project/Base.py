@@ -7,9 +7,9 @@ from src.Settings import Settings
 
 
 # Definitions
-EXTRACTED          = Path("extracted_songs")
-CACHED             = Path("compressed_songs")
-TEMP               = Path("temp")
+EXTRACTED = Path("extracted_songs")
+CACHED    = Path("compressed_songs")
+TEMP      = Path("temp")
 
 
 class Base:

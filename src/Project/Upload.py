@@ -14,6 +14,10 @@ class Upload:
             Log.press_enter()
             return False
 
+        # Make sure we set the category if it's never been uploaded before
+        if not self.is_remote():
+            self.change_category(back=False)
+
         if not Dev.get("NO_OPEN_STUDIO_ONE"):
             if self.dialog_remove_unused_audio_files():
                 if not self.open_studio_one():

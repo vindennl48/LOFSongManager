@@ -39,15 +39,15 @@ class Entry:
         result = Database.get_entry(self.model, self.name)
         if result:
             self.data = result.data
+        return True
 
     # Pull down any updates from the cloud database
     def refresh(self):
         Database.refresh()
-        self.sync()
+        return self.sync()
 
     def destroy(self):
-        Log("Destroy function not yet set up!","warning")
-        Log.press_enter()
+        return Database.destroy_entry(self.model, self.name)
 
 
 class Database:
@@ -90,13 +90,28 @@ class Database:
         if model in db:
             db[model][name] = data
             File.set_json(FILEPATH_LOCAL, db)
-            return Drive.upload(FILEPATH_LOCAL, Drive.mimeType["json"])
+            return Database.push()
+
+        raise Exception(f'Model "{model}" doesn\'t exist in Database!')
+
+    def destroy_entry(model, name):
+        Database.refresh()
+
+        db = File.get_json(FILEPATH_LOCAL)
+
+        if model in db:
+            db[model].pop(name)
+            File.set_json(FILEPATH_LOCAL, db)
+            return Database.push()
 
         raise Exception(f'Model "{model}" doesn\'t exist in Database!')
 
     def refresh():
         File.delete(FILEPATH_LOCAL)
         Drive.download(Database.cloud_id, FILEPATH_LOCAL)
+
+    def push():
+        return Drive.upload(FILEPATH_LOCAL, Drive.mimeType["json"])
 
     def get_cloud_id():
         result = Drive.get_id(DATABASE_FILENAME)

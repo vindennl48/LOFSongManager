@@ -2,7 +2,7 @@ import sys
 from src.Slack import Slack
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
-from src.menus.menu_open_project import menu_open_project
+from src.menus.menu_open_project import menu_open_category
 from src.menus.menu_create_project import menu_create_project
 from src.menus.menu_delete_project import menu_delete_project
 
@@ -13,7 +13,7 @@ def exit():
 
 def menu_main():
     options = [
-        ["Open",       menu_open_project],
+        ["Projects",   menu_open_category],
         ["New",        menu_create_project],
         ["Delete",     menu_delete_project],
         # ["Advanced", ],

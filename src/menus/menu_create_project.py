@@ -31,6 +31,9 @@ def menu_create_project():
         File.recursive_overwrite(template, new_song)
         File.recursive_overwrite(template, new_song_original)
 
+        for location in ["Media","Bounces","Mixdown"]:
+            Folder.create( new_song.parent/location )
+
         Log(f'New song "{Slack.make_nice_project_name(name)}" created!', "notice")
         Log.press_enter()
 
