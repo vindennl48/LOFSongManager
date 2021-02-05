@@ -41,7 +41,7 @@ if __name__ == "__main__":
         dialog.press_enter()
 
         # Rename src/dev.py to src/Dev.py
-        File.rename("src/dev.py", "Dev.py")
+        File.rename("src/dev.py", "src/Dev.py")
 
         Log("A restart is needed to update the core!","notice")
         Log("Please ignore the following error message and restart the program.","sub")
