@@ -11,6 +11,7 @@ from src.Settings import Settings
 class Update:
     def run():
         if Dev.get("DO_NOT_UPDATE"):
+            Run.prg("pip", "freeze > requirements.txt")
             return True
 
         Update.pull_updates_from_git()
