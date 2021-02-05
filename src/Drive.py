@@ -27,32 +27,43 @@ class Drive:
     }
 
     def initialize():
-        Drive.service = None
+        i = 0
+        while i < 5:
+            try:
+                Drive.service = None
 
-        # If modifying these scopes, delete the file token.pickle.
-        SCOPES = ["https://www.googleapis.com/auth/drive"]
-        # SCOPES = ["https://www.googleapis.com/auth/admin.directory.group"]
-        creds  = None
+                # If modifying these scopes, delete the file token.pickle.
+                SCOPES = ["https://www.googleapis.com/auth/drive"]
+                # SCOPES = ["https://www.googleapis.com/auth/admin.directory.group"]
+                creds  = None
 
-        if os.path.exists("token.pickle"):
-            with open("token.pickle", "rb") as token:
-                creds = pickle.load(token)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", SCOPES)
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open("token.pickle", "wb") as token:
-                pickle.dump(creds, token)
+                if os.path.exists("token.pickle"):
+                    with open("token.pickle", "rb") as token:
+                        creds = pickle.load(token)
+                # If there are no (valid) credentials available, let the user log in.
+                if not creds or not creds.valid:
+                    if creds and creds.expired and creds.refresh_token:
+                        creds.refresh(Request())
+                    else:
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                            "credentials.json", SCOPES)
+                        creds = flow.run_local_server(port=0)
+                    # Save the credentials for the next run
+                    with open("token.pickle", "wb") as token:
+                        pickle.dump(creds, token)
 
-        Drive.service = build("drive", "v3", credentials=creds)
+                Drive.service = build("drive", "v3", credentials=creds)
 
-        # Root of the LOFSM project on the cloud
-        Drive.root_id = Drive.get_root_id()
+                # Root of the LOFSM project on the cloud
+                Drive.root_id = Drive.get_root_id()
+
+                i = 99
+            except:
+                i+=1
+                Log(f'Attempting to connect to the drive.. #{i}',"notice")
+
+        if i != 99:
+            raise Exception("\n\n####  There was a problem connecting to Google Drive! Check your internet connection!")
 
     def get_root_id():
         # Check to see which root id we are getting
@@ -179,51 +190,62 @@ class Drive:
         filepath = Path(filepath)
         file     = None
 
-        # Check to see if the file is already uploaded
-        results = Drive.ls(parent)
-        for r in results:
-            if r["name"] == filepath.name:
-                # Update
-                file = Drive.service.files().update(
-                    fileId=r["id"],
-                    body={
-                        "name": r["name"],
-                    },
-                    media_body=MediaFileUpload(
-                        filepath.absolute(),
-                        chunksize=51200*1024,
-                        mimetype=mimeType,
-                        resumable=True
+        # We will attempt to upload 5x before we give up
+        i = 0
+        while i < 5:
+            try:
+                # Check to see if the file is already uploaded
+                results = Drive.ls(parent)
+                for r in results:
+                    if r["name"] == filepath.name:
+                        # Update
+                        file = Drive.service.files().update(
+                            fileId=r["id"],
+                            body={
+                                "name": r["name"],
+                            },
+                            media_body=MediaFileUpload(
+                                filepath.absolute(),
+                                chunksize=51200*1024,
+                                mimetype=mimeType,
+                                resumable=True
+                            )
+                        )
+                        break
+
+                # If file is not already uploaded
+                if not file:
+                    file = Drive.service.files().create(
+                        body={
+                            "name":    filepath.name,
+                            "parents": [ parent ],
+                        },
+                        media_body=MediaFileUpload(
+                            filepath.absolute(),
+                            chunksize=51200*1024,
+                            mimetype=mimeType,
+                            resumable=True
+                        )
                     )
-                )
-                break
 
-        # If file is not already uploaded
-        if not file:
-            file = Drive.service.files().create(
-                body={
-                    "name":    filepath.name,
-                    "parents": [ parent ],
-                },
-                media_body=MediaFileUpload(
-                    filepath.absolute(),
-                    chunksize=51200*1024,
-                    mimetype=mimeType,
-                    resumable=True
-                )
-            )
+                # Upload
+                print(f'----> "{filepath.name}" Uploaded 0%', end="\r", flush=True)
 
-        # Upload
-        print(f"----> Uploaded 0%", end="\r", flush=True)
+                response = None
+                while response is None:
+                    status, response = file.next_chunk()
+                    if status:
+                        print(f'----> "{filepath.name}" Uploaded {int(status.progress() * 100)}%', end="\r", flush=True)
 
-        response = None
-        while response is None:
-            status, response = file.next_chunk()
-            if status:
-                print(f"----> Uploaded {int(status.progress() * 100)}%", end="\r", flush=True)
+                # If we made it this far then we should be all set
+                i = 99
+            except:
+                i += 1
+                Log(f'Upload attempt #{i}..',"notice")
 
-        if file:
-            print("      Uploaded successfully!")
+        # If we got a return from the Drive AND we completed the while loop
+        if file and i==99:
+            print(f'      "{filepath.name}" Uploaded successfully!')
 
             # Try 5x to get the new ID from the file
             i = 0
@@ -236,34 +258,47 @@ class Drive:
             return False
 
         else:
-            print(f'Failed to upload "{filepath.name}"!')
+            Log(f'Failed to upload "{filepath.name}"!',"warning")
             return False
 
     def download(ID, save_path):
         if Dev.get("NO_DOWNLOAD"):
             return True
 
-        save_path  = Path(save_path)
-        request    = Drive.service.files().get_media(fileId=ID)
-        fh         = io.BytesIO()
-        downloader = MediaIoBaseDownload(fh, request, chunksize=51200*1024)
+        # We will attempt to download 5x before we give up
+        i = 0
+        while i < 5:
+            try:
+                save_path  = Path(save_path)
+                request    = Drive.service.files().get_media(fileId=ID)
+                fh         = io.BytesIO()
+                downloader = MediaIoBaseDownload(fh, request, chunksize=51200*1024)
 
-        print(f"----> Downloaded 0%", end="\r", flush=True)
+                print(f'----> "{save_path.name}" Downloaded 0%', end="\r", flush=True)
 
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-            if status:
-                print(f"----> Downloaded {int(status.progress() * 100)}%", end="\r", flush=True)
+                done = False
+                while done is False:
+                    status, done = downloader.next_chunk()
+                    if status:
+                        print(f'----> "{save_path.name}" Downloaded {int(status.progress() * 100)}%', end="\r", flush=True)
 
-        if downloader:
-            print("      Downloaded successfully!")
+                # If we made it this far then we should be all set
+                i = 99
+            except:
+                i += 1
+                Log(f'Download attempt #{i}..',"notice")
+
+        # If we got a return from the Drive AND we completed the while loop
+        if downloader and i==99:
+            print(f'      "{save_path.name}" Downloaded successfully!')
 
             fh.seek(0)
             with open(save_path.absolute(), "wb") as f:
                 shutil.copyfileobj(fh, f, length=1024*1024)
 
             return True
+
+        Log(f'Failed to download "{save_path.name}"!',"warning")
         return False
 
     def delete(ID):
@@ -272,64 +307,3 @@ class Drive:
         ).execute()
 
 Drive.initialize()
-
-#    These functions were part of the slowdown issue
-################################################################################
-#    def get_json(self, remote_file, local_filepath):
-#        # remote_file    = cloud ID or cloud filepath
-#        # local_filepath = place to save the json file temporarily
-#        local_filepath = Path(local_filepath)
-#
-#        download = self.download(
-#            ID        = self.get_info(remote_file),
-#            save_path = local_filepath
-#        )
-#
-#        if not download:
-#            raise Exception(f'Something went wrong when downloading "{local_filepath.name}"')
-#
-#        return File.get_json(local_filepath)
-#
-#    def set_json(self, local_filepath, parent=None):
-#        # remote_file    = cloud ID or cloud filepath
-#        # local_filepath = place to save the json file temporarily
-#
-#        # If no parent is specified, use the project root_id
-#        if not parent:
-#            parent = self.root_id
-#
-#        local_filepath = Path(local_filepath)
-#
-#        upload = self.upload(
-#            filepath = local_filepath,
-#            mimeType = Drive.mimeType["json"],
-#            parent   = parent
-#        )
-#
-#        if not upload:
-#            raise Exception(f'Something went wrong when uploading "{local_filepath.name}"')
-#
-#    def get_json_key(self, remote_file, local_filepath, key):
-#        # remote_file    = cloud ID or cloud filepath
-#        # local_filepath = place to save the json file temporarily
-#        self.get_json(remote_file, local_filepath)
-#        return File.get_json_key(local_filepath, key)
-#
-#    def set_json_key(self, remote_file, local_filepath, key, data, parent=None):
-#        # If no parent is specified, use the project root_id
-#        if not parent:
-#            parent = self.root_id
-#
-#        self.get_json(remote_file, local_filepath)
-#        File.set_json_key(local_filepath, key, data)
-#        self.set_json(local_filepath, parent)
-#
-#    def remove_json_key(self, remote_file, local_filepath, key, parent=None):
-#        # If no parent is specified, use the project root_id
-#        if not parent:
-#            parent = self.root_id
-#
-#        self.get_json(remote_file, local_filepath)
-#        File.remove_json_key(local_filepath, key)
-#        self.set_json(local_filepath, parent)
-#
