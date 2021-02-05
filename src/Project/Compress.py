@@ -46,6 +46,9 @@ class Compress:
         return True
 
     def move_extracted_song_to_temp(self):
+        # Make sure we don't have any dummy files
+        self.remove_dummy_files()
+
         for location in ["Media", "Bounces"]:
             # Remove unused cached audio from location
             # Garbage collector for unused audio files
