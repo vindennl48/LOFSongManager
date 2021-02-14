@@ -30,8 +30,9 @@ class Dialog:
         return ans
 
     def get_result(self, prompt=None):
+        ans = input(f'  {prompt}: ')
         Log(f'Dialog Result Answer: "{ans}"', 'sub', quiet=True)
-        return input(f'  {prompt}: ')
+        return ans
 
     def press_enter(self):
         Log.press_enter()
