@@ -1,5 +1,6 @@
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
+from src.Settings import Settings
 from src.Project.Index import Index as ProjectIndex
 
 def menu_open_category():
@@ -63,10 +64,17 @@ def menu_project_options(project):
     # options.append(["Change Name", None])
     # options.append(["Duplicate", None])
 
-    if not project.is_remote():
+    if not project.is_remote() or project.is_dirty():
         options.append(["Upload", project.upload_project])
-    else:
+
+    if project.is_remote():
+        if not project.is_up_to_date():
+            options.append(["Download", project.download_and_extract])
         options.append(["Change Category", project.change_category])
+
+    mutex = project.is_locked()
+    if mutex and mutex == Settings.get_username(capitalize=True):
+        options.append(["Unlock", project.remove_lock])
 
     options.append(["Delete", project.delete_project])
 

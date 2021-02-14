@@ -20,13 +20,11 @@ class Base:
 
         if not self.get_song_file().exists():
             Log("Studio One project file doesn't exist!","warning")
-            Log.press_enter()
-            raise Exception("Studio One project file doesn't exist!")
+            return False
 
         if not self.get_song_file(version="original").exists():
             Log("Studio One 'original' project file doesn't exist!","warning")
-            Log.press_enter()
-            raise Exception("Studio One 'original' project file doesn't exist!")
+            return False
 
         return not filecmp.cmp(
             self.get_song_file(),
@@ -87,12 +85,14 @@ class Base:
                 Log(f'Project "{self.entry.name}" is cached but not hashed!',"warning")
                 Log.press_enter()
                 return False
+            Log(f'Project "{self.entry.name}" is locally cached')
             return True
         else:
             if Hash.get_project_hash(self):
                 Log(f'Project "{self.entry.name}" is hashed but not cached!',"warning")
                 Log.press_enter()
 
+        Log(f'Project "{self.entry.name}" is not locally cached')
         return False
 
     def is_remote(self):

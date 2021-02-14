@@ -12,6 +12,8 @@ from src.FileManagement.Folder import Folder
 class Compress:
 
     def compress_project(self):
+        Log("Compressing project..","notice")
+
         # Clean out temp project if it exists
         Log("Cleaning out temp folder")
         Folder.delete( self.get_temp_dir() )
@@ -26,7 +28,7 @@ class Compress:
             Folder.create( self.get_temp_dir() )
 
         # Create folders if they dont exist
-        self.create_required_folders(temp=True)
+        self.create_required_folders(temp=True, clean=False)
 
         # Copy from 'extracted_songs' to 'temp'
         if not self.move_extracted_song_to_temp():
@@ -53,7 +55,7 @@ class Compress:
             # Remove unused cached audio from location
             # Garbage collector for unused audio files
             mp3s      = Folder.ls_files( self.get_temp_dir()/location, "mp3" )
-            wav_names = [ x.stem for x in Folder.ls_files( self.get_root_dir()/location, "mp3" ) ]
+            wav_names = [ x.stem for x in Folder.ls_files( self.get_root_dir()/location, "wav" ) ]
             for mp3 in mp3s:
                 if mp3.stem not in wav_names:
                     File.delete(mp3)

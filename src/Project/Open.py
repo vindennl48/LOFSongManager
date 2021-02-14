@@ -13,13 +13,7 @@ class Open:
         # - Download any new updates / Download new project
         if not self.is_up_to_date():
             Log("Project Update Available!")
-            if not self.download_project():
-                Log("There was a problem downloading the update..","warning")
-                Log.press_enter()
-                return False
-            if not self.extract_project():
-                Log("There was a problem extracting the project..","warning")
-                Log.press_enter()
+            if not self.download_and_extract():
                 return False
 
         # Check for mutex lock

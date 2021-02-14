@@ -4,6 +4,7 @@ from src.Drive import Drive
 from src.TERMGUI.Log import Log
 from src.Settings import Settings
 from src.FileManagement.File import File
+from src.FileManagement.Folder import Folder
 
 
 # Definitions
@@ -57,6 +58,9 @@ class Database:
 
     def initialize():
         Database.cloud_id = Database.get_cloud_id()
+
+        # Clean out temp folder
+        Folder.clear_temp()
 
         # Download a fresh version of the database
         Database.refresh()

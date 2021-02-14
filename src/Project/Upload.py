@@ -4,6 +4,7 @@ from src.Slack import Slack
 from src.Drive import Drive
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
+from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 
 class Upload:
@@ -50,6 +51,13 @@ class Upload:
             self.entry.update()
 
             Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
+
+            # Remove name from dirty list
+            self.remove_dirty()
+
+            # Since we successfully uploaded to the drive, we can now get
+            #  rid of the *original song file
+            File.recursive_overwrite( self.get_song_file(), self.get_song_file(version="original") )
 
         Log("Compression and upload complete!", "notice")
 

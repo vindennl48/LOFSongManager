@@ -27,17 +27,23 @@ class Extract:
 
         return True
 
-    def create_required_folders(self, temp=False):
+    def create_required_folders(self, temp=False, clean=True):
+        # 'temp=True'  will focus on the temp/<song> directory
+        # 'temp=False' will focus on the extracted_songs/<song> directory
+        # 'clean=True' will delete the folders first, then recreate them
+
         # Need to make sure these folders exist
         Log("Creating necessary folders")
 
         if temp:
             # Clean out temp dir
-            Folder.delete( self.get_temp_dir() )
+            if clean:
+                Folder.delete( self.get_temp_dir() )
             Folder.create( self.get_temp_dir() )
         else:
             # Create new extracted dir, remove if exists
-            Folder.delete( self.get_root_dir() )
+            if clean:
+                Folder.delete( self.get_root_dir() )
             Folder.create( self.get_root_dir() )
 
 

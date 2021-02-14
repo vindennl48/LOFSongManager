@@ -2,11 +2,13 @@ import sys
 from src.Slack import Slack
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
+from src.FileManagement.Folder import Folder
 from src.menus.menu_advanced import menu_advanced
 from src.menus.menu_open_project import menu_open_category
 from src.menus.menu_create_project import menu_create_project
 
 def exit():
+    Folder.clear_temp()
     # 0 = there was a problem
     # 1 = exit gracefully
     sys.exit(1)

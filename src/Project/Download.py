@@ -19,3 +19,14 @@ class Download:
 
         return True
 
+    def download_and_extract(self):
+        if not self.download_project():
+            Log("There was a problem downloading the update..","warning")
+            Log.press_enter()
+            return False
+        if not self.extract_project():
+            Log("There was a problem extracting the project..","warning")
+            Log.press_enter()
+            return False
+        return True
+
