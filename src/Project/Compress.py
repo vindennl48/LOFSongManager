@@ -88,8 +88,10 @@ class Compress:
                     mimeType = Drive.mimeType["mp3"],
                     parent   = mix_folder_id
                 )
+
+                audio_type = "Scratch" if mp3.parent.name == "Media" else "#MIXDOWN#"
                 Slack.send_link(
-                    link_name = f'Scratch for {self.entry.name}, "{mp3.name}"',
+                    link_name = f'{audio_type} for {self.entry.name}, "{mp3.name}"',
                     ID        = mp3_id
                 )
             else:
