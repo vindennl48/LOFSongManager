@@ -39,7 +39,8 @@ class Hash:
 
     def remove_project_hash(project):
         db = File.get_json(FILEPATH_LOCAL)
-        db.pop(project.entry.name)
+        if project.entry.name in db:
+            db.pop(project.entry.name)
         File.set_json(FILEPATH_LOCAL, db)
         return True
 
