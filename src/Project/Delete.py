@@ -7,6 +7,15 @@ from src.FileManagement.Folder import Folder
 
 class Delete:
     def delete_project(self):
+        options = []
+        if self.is_local():
+            options.append("local")
+        if self.is_remote():
+            options.append("remote")
+        if self.is_local() and self.is_remote():
+            options.append("both")
+        options.append("back")
+
         dialog = Dialog(
             title = f'Deleting Project "{self.entry.name}"',
             body  = [
@@ -16,7 +25,7 @@ class Delete:
             ]
         )
 
-        ans = dialog.get_mult_choice(["local","remote","both","back"])
+        ans = dialog.get_mult_choice(options)
 
         if ans == "back":
             return True
