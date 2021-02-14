@@ -76,7 +76,8 @@ def menu_project_options(project):
     if mutex and mutex == Settings.get_username(capitalize=True):
         options.append(["Unlock", project.remove_lock])
 
-    options.append(["Duplicate", project.duplicate])
+    if project.is_local():
+        options.append(["Duplicate", project.duplicate])
 
     options.append(["Delete", project.delete_project])
 
