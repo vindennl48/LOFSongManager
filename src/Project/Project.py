@@ -99,7 +99,7 @@ class Project(Base, Upload, Download, Extract, Compress, Open, Dummy, Delete):
     def dialog_copy_confirm(self):
         dialog = Dialog(
             title = f'Make Duplicate of "{self.entry.name}"',
-            body = "Would you like to make a duplicate of this project?"
+            body  = "Would you like to make a duplicate of this project?"
         )
 
         ans = dialog.get_mult_choice(["y","n"])
@@ -112,15 +112,16 @@ class Project(Base, Upload, Download, Extract, Compress, Open, Dummy, Delete):
     def dialog_copy_new_name(self):
         dialog = Dialog(
             title = f'Make Duplicate of "{self.entry.name}"',
-            body = "Please enter a new name for your duplicate project."
+            body  = "Please enter a new name for your duplicate project."
         )
 
-        new_name = dialog.get_result("New Name").lower()
+        new_name      = dialog.get_result("New Name").lower()
+        project_names = [ x.name.lower() for x in Folder.ls_folders(self.get_root_dir().parent) ]
 
-        if new_name != self.entry.name.lower():
+        if not new_name in project_names:
             return new_name
 
-        Log("You can not use the same name.. Please try again!")
+        Log("That project name already exists.. Please try again!")
         Log.press_enter()
 
         return self.dialog_copy_new_name()
