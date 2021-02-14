@@ -12,6 +12,7 @@ class Dialog:
             self.create_body(body),
         ]
 
+        Log(f'Dialog: "{title}"', 'notice', quiet=True)
         self.show(self.stack, clear)
 
     def get_mult_choice(self, options):
@@ -25,13 +26,16 @@ class Dialog:
             if not ans in options:
                 print(f'\n  "{ans}" is not a valid option!\n')
 
+        Log(f'Dialog Mult Choice Answer: "{ans}"', 'sub', quiet=True)
         return ans
 
     def get_result(self, prompt=None):
+        Log(f'Dialog Result Answer: "{ans}"', 'sub', quiet=True)
         return input(f'  {prompt}: ')
 
     def press_enter(self):
         Log.press_enter()
+        Log(f'Dialog Press Enter', 'sub', quiet=True)
         return self
 
     def show(self, stack, clear=True):
@@ -72,6 +76,7 @@ class Dialog:
         ], clear=False)
 
         ans = self.get_mult_choice(['y','n'])
+        Log(f'Dialog Confirm Answer: "{ans}"', quiet=True)
 
         if ans == 'y':
             return True

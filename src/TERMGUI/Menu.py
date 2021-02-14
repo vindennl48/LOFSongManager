@@ -11,6 +11,7 @@ class Menu:
         self.title   = title
         self.options = options
         self.back    = back
+        Log(f'Menu: "{title}"', 'notice', quiet=True)
         self.create_stack().run()
 
     def create_stack(self):
@@ -88,16 +89,21 @@ class Menu:
     def get_result(self):
         ans = input(f'   : ').lower()
 
+
         if ans == "b" and self.back:
+            Log(f'Menu Answer: "back"', 'sub', quiet=True)
             print(f'')
             return "back"
         elif ans.isnumeric() and int(ans) <= len(self.options):
+            result = (int(ans) -1)
+            Log(f'Menu Answer: "{self.options[result]}"', 'sub', quiet=True)
             print(f'')
-            return (int(ans) -1)
+            return result
 
         print(f'')
         print(f'"{ans}" is not a valid option!')
         print(f'')
+        Log(f'Menu Answer Not Valid!: "{ans}"', 'sub', quiet=True)
         Log.press_enter()
 
         return self.create_stack().run().get_result()

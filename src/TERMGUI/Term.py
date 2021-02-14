@@ -10,5 +10,5 @@ class Term:
 
         os.system(command)
 
-        Log.save_to_file("\n  ## *ClearScreen* ##\n")
+        # Log.save_to_file("\n  ## *ClearScreen* ##\n")
 
