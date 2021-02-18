@@ -54,6 +54,7 @@ class Open:
                     if not self.upload_project():
                         Log("An error occurred when trying to upload the project!","warning")
                         Log.press_enter()
+                        self.remove_lock()
                         return False
                     # Remove our name from the dirty list if it exists
                     self.remove_dirty()
