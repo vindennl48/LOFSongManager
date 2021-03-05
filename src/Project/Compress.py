@@ -11,7 +11,7 @@ from src.FileManagement.Folder import Folder
 
 class Compress:
 
-    def compress_project(self):
+    def compress_project(self, set_hash=True):
         Log("Compressing project..","notice")
 
         # Clean out temp project if it exists
@@ -42,8 +42,9 @@ class Compress:
             destination = self.get_cache_file()
         )
 
-        # Set new local hash
-        Hash.set_project_hash(self, Hash.create_hash_from_project(self))
+        if set_hash:
+            # Set new local hash
+            Hash.set_project_hash(self, Hash.create_hash_from_project(self))
 
         return True
 

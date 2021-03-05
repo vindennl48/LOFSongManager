@@ -28,7 +28,9 @@ class Upload:
         if not Drive.get_id( self.entry.name ):
             Drive.mkdir( self.entry.name )
 
-        if not self.compress_project():
+        # We will need to set the local hash on our own incase of failure
+        #  to upload
+        if not self.compress_project(set_hash=False):
             return False
 
         # Upload compressed project
@@ -45,9 +47,12 @@ class Upload:
                 Log.press_enter()
                 return False
 
+            # Update local hash
+            Hash.set_project_hash(self, Hash.create_hash_from_project(self))
+
             # Update remote hash if file was successfully uploaded
             self.entry.data["id"]   = result
-            self.entry.data["hash"] = Hash.get_project_hash(self) # Hash is created in self.compress_project()
+            self.entry.data["hash"] = Hash.get_project_hash(self)
             self.entry.update()
 
             Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
