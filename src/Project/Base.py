@@ -113,7 +113,12 @@ class Base:
         return False
 
     def is_locked(self):
-        if "is_locked" in self.entry.data and self.entry.data["is_locked"]:
+        if self.entry.name == "practice":
+            self.entry.data["is_locked"] = "Mitch"
+            # self.entry.update()
+            return self.entry.data["is_locked"]
+        elif "is_locked" in self.entry.data and self.entry.data["is_locked"]:
+        # if "is_locked" in self.entry.data and self.entry.data["is_locked"]:
             return self.entry.data["is_locked"]
         return False
 
