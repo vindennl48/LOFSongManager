@@ -6,8 +6,8 @@ ffmpeg
 PortableGit
 credentials.json
 token.pickle
-test.py
-test.json
+token.json
+test.*
 __pycache__
 .settings
 .dev
