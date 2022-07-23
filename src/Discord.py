@@ -45,7 +45,7 @@ class Discord:
         data = { "text": text }
 
         if not quiet:
-            Log("Sending Discord Notification..")
+            Log("Sending Discord notification..")
 
         # Attempt to send notification 5x
         i = 0
@@ -60,11 +60,10 @@ class Discord:
                 i = 10
             except:
                 i += 1
-                Log(f'Discord notification refused to send! Try: {i}', "warning")
+                Log(f'Discord notification failed to send! Try: {i}', "warning")
 
         if i != 10:
-            # Discord notification failed 5x, skipping slack notification
-            Log(f'Discord notification refused to send! Skipping notification..', "warning")
+            Log(f'Discord notification failed to send! Skipping notification..', "warning")
 
         if not quiet and i == 10:
             Log(f'Discord ({endpoint}): "{text}"')

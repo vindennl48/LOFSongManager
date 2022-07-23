@@ -1,6 +1,6 @@
 from src.Dev import Dev
 from src.Hash import Hash
-from src.Slack import Slack
+from src.Discord import Discord
 from src.Drive import Drive
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
@@ -55,7 +55,7 @@ class Upload:
             self.entry.data["hash"] = Hash.get_project_hash(self)
             self.entry.update()
 
-            Slack(f'{Slack.get_nice_username()} uploaded a new version of {Slack.make_nice_project_name(self.entry.name)}')
+            Discord(f'{Discord.get_nice_username()} uploaded a new version of {Discord.make_nice_project_name(self.entry.name)}')
 
             # Remove name from dirty list
             self.remove_dirty()

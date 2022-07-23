@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.Slack import Slack
+from src.Discord import Discord
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
@@ -34,7 +34,7 @@ def menu_create_project():
         for location in ["Media","Bounces","Mixdown"]:
             Folder.create( new_song.parent/location )
 
-        Log(f'New song "{Slack.make_nice_project_name(name)}" created!', "notice")
+        Log(f'New song "{Discord.make_nice_project_name(name)}" created!', "notice")
         Log.press_enter()
 
         return True

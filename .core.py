@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.Slack import Slack
+from src.Discord import Discord
 from src.Update import Update
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
@@ -13,7 +13,7 @@ def start_main_program():
 
         if ans == 0:
             # There was an error
-            Slack.upload_log()
+            Discord.upload_log()
             raise Exception("\n\nThere was an error.. Contact your administrator.\n\n")
 
     else:
@@ -31,7 +31,7 @@ def start_main_program():
             ],
             clear = False
         ).press_enter()
-        Slack.upload_log()
+        Discord.upload_log()
 
 
 ## MAIN FUNCTION

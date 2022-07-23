@@ -7,15 +7,15 @@ from src.TERMGUI.Dialog import Dialog
 class Settings:
 
     filepath       = Path(".settings")
-    slack_prod_key = "slack_endpoint_prod"
-    slack_dev_key  = "slack_endpoint_dev"
+    discord_prod_key = "discord_endpoint_prod"
+    discord_dev_key  = "discord_endpoint_dev"
 
     def create():
         if not Settings.filepath.exists():
             File.set_json(Settings.filepath.absolute(), {})
             Settings.set_username()
             Settings.set_version("0.0")
-            Settings.set_slack_endpoints()
+            Settings.set_discord_endpoints()
 
     def set_key(key, data):
         Settings.create()

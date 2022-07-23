@@ -1,5 +1,5 @@
 import traceback,sys
-from src.Slack import Slack
+from src.Discord import Discord
 from src.Update import Update
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
