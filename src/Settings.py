@@ -6,7 +6,7 @@ from src.TERMGUI.Dialog import Dialog
 
 class Settings:
 
-    filepath       = Path(".settings")
+    filepath         = Path(".settings")
     discord_prod_key = "discord_endpoint_prod"
     discord_dev_key  = "discord_endpoint_dev"
 
@@ -74,3 +74,38 @@ class Settings:
             username = username.capitalize()
 
         return username
+
+    def check_discord_endpoints():
+        settings = Settings.get_all()
+
+        if not Settings.discord_prod_key in settings or \
+           not Settings.discord_dev_key in settings:
+            return False
+
+        if settings[Settings.discord_prod_key] == "" or \
+           settings[Settings.discord_dev_key] == "":
+            return False
+
+        return True
+
+    def set_discord_endpoints():
+        if not Settings.check_discord_endpoints():
+            drive = Drive()
+
+            Settings.set_key(
+                key  = Settings.discord_prod_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.discord_prod_key
+                )
+            )
+
+            Settings.set_key(
+                key  = Settings.discord_dev_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.discord_dev_key
+                )
+            )

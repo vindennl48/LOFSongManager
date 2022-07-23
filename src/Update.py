@@ -3,6 +3,7 @@ from src.Dev import Dev
 from pathlib import Path
 from decimal import Decimal
 from src.Discord import Discord
+from src.FileManagement.File import File
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
 from src.Settings import Settings
@@ -41,7 +42,9 @@ class Update:
                 ans = Run.prg("python", migration.absolute(), useSubprocess=True)
 
                 if ans == 0:
-                    Discord.upload_log()
+                    content = File.get(Log.filepath)
+                    Discord().post_log(content)
+
                     Log(f'There was a problem loading this migration file!\n "{migration.absolute()}"',"warning")
                     Log.press_enter()
                     # If there was an issue upgrading the migration, we don't want to set the new version
@@ -54,6 +57,8 @@ class Update:
                 Settings.set_version(migration_version)
 
                 # Push a notification to Discord
-                Discord(f'{Settings.get_username(capitalize=True)} has upgraded to V{migration_version}!').post()
+                content = f"{Settings.get_username(capitalize=True)} has " \
+                        "upgraded to V{migration_version}!"
+                Discord().post_message(content)
 
         return result

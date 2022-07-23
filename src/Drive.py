@@ -14,6 +14,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 # Definitions
 KEY_CLOUD_ROOT_ID     = "cloud_root_id"
 KEY_CLOUD_ROOT_ID_DEV = "cloud_root_id_dev"
+DRIVE_URL_BASE        = "https://drive.google.com/file/d"
 
 
 class Drive:
@@ -26,6 +27,9 @@ class Drive:
         "json":   "application/json",
         "mp3":    "audio/mp3",
     }
+
+    def file_url(uid):
+        return f"{DRIVE_URL_BASE}/{uid}"
 
     def initialize():
         i = 0

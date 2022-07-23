@@ -2,102 +2,68 @@ import requests, json
 from src.Dev import Dev
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
-from src.FileManagement.File import File
 
 from discord_webhook import DiscordWebhook
 
 
 class Discord:
 
+    dev_endpoint = Settings.get_key(Settings.discord_dev_key)
+    prod_endpoint = Settings.get_key(Settings.discord_prod_key)
+
     def __init__(self, content = "", quiet = False):
         self.content = content
         self.quiet = quiet
+
         self.dev = True if Dev.isDev() else False
         self.username = Settings.get_username(capitalize = True)
 
-        self._set_endpoint()
-        print(self.endpoint)
+        self.set_endpoint()
 
-    def _set_endpoint(self):
+    def set_endpoint(self):
         if self.dev:
-            endpoint = self._dev_endpoint()
+            endpoint = self.dev_endpoint
         else:
-            endpoint = self._prod_endpoint()
+            endpoint = self.prod_endpoint
 
         self.endpoint = endpoint
 
-    def _dev_endpoint(self):
-        return Settings.get_key(Settings.discord_dev_key)
-
-    def _prod_endpoint(self):
-        return Settings.get_key(Settings.discord_prod_key)
-
     def post(self):
-        webhook = self._build_webhook()
+        webhook = self.build_webhook()
 
         if not self.quiet:
-            Log("Sending Discord notification...")
-            Log(f'{webhook}')
+            Log("Sending Discord notification")
 
         response = webhook.execute()
 
-        if not self.quiet:
-            if response.ok:
-                Log("Notification webhook succeeded")
-            else:
-                Log('Notification webhook failed: {response}')
+        if not self.quiet and not response.ok:
+            Log("Notification webhook failed:")
+            Log(f"  Webhook: {inspect.getmembers(webhook)}")
+            Log(f"  Response: {inspect.getmembers(response)}")
 
-    def _build_webhook(self):
-        url = self.endpoint
-        content = self.content
+    def build_webhook(self):
+        return DiscordWebhook(
+                url = self.endpoint,
+                rate_limit_retry = True,
+                content = self.content)
 
-        return DiscordWebhook(url = url, rate_limit_retry = True, content = content)
+    def post_link(self, link_title, url):
+        description = f"{self.username} uploaded {link_title}"
 
-
-    def post_link(self, url, ID):
-        name = self.username
-        text = f'{name} uploaded {url}: https://drive.google.com/file/d/{ID}'
-
-        self.content = text
+        self.content = f"{description}: {url}"
 
         self.post()
 
-    def reset_discord_endpoints():
-        Settings.set_key(Settings.discord_prod_key, "")
-        Settings.set_key(Settings.discord_dev_key, "")
-        Settings.set_discord_endpoints()
+    def post_message(self, content):
+        self.content = content
 
-    def check_discord_endpoints():
-        settings = Settings.get_all()
+        self.post()
 
-        if not Settings.discord_prod_key in settings or \
-           not Settings.discord_dev_key in settings:
-            return False
+    def post_log(self, content, quiet = True):
+        log = f"{self.username} – Log: {content}"
 
-        if settings[Settings.discord_prod_key] == "" or \
-           settings[Settings.discord_dev_key] == "":
-            return False
+        self.content = log
+        self.quiet = quiet
+        self.dev = True
 
-        return True
-
-    def set_discord_endpoints():
-        if not Settings.check_discord_endpoints():
-            drive = Drive()
-
-            Settings.set_key(
-                key  = Settings.discord_prod_key,
-                data = drive.get_json_key(
-                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
-                    local_filepath = f'temp/db.json',
-                    key            = Settings.discord_prod_key
-                )
-            )
-
-            Settings.set_key(
-                key  = Settings.discord_dev_key,
-                data = drive.get_json_key(
-                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
-                    local_filepath = f'temp/db.json',
-                    key            = Settings.discord_dev_key
-                )
-            )
+        self.post()

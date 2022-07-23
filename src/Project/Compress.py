@@ -91,10 +91,11 @@ class Compress:
                 )
 
                 audio_type = "Scratch" if mp3.parent.name == "Media" else "#MIXDOWN#"
-                Discord().post_link(
-                    link_name = f'{audio_type} for {self.entry.name}, "{mp3.name}"',
-                    ID        = mp3_id
-                )
+
+                link_title = f'{audio_type} for {self.entry.name}, "{mp3.name}"'
+                url        = Drive.file_url(mp3_id)
+
+                Discord().post_link(link_title, url)
             else:
                 Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
 
