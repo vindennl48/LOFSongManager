@@ -11,7 +11,7 @@ class Discord:
     dev_endpoint = Settings.get_key(Settings.discord_dev_key)
     prod_endpoint = Settings.get_key(Settings.discord_prod_key)
 
-    def __init__(self, content = "", quiet = False):
+    def __init__(self, quiet = False):
         self.content = content
         self.quiet = quiet
 
