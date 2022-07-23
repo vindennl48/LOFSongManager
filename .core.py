@@ -13,7 +13,7 @@ def start_main_program():
 
         if ans == 0:
             # There was an error
-            Discord.upload_log()
+            Discord().post_log(Log.dump())
             raise Exception("\n\nThere was an error.. Contact your administrator.\n\n")
 
     else:
@@ -32,7 +32,7 @@ def start_main_program():
             clear = False
         ).press_enter()
 
-        Discord.post_log(Log.dump())
+        Discord().post_log(Log.dump())
 
 
 ## MAIN FUNCTION
