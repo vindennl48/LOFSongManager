@@ -1,5 +1,6 @@
 import textwrap, os
 from datetime import datetime
+from src.FileManagement.File import File
 from src.FileManagement.FileEdit import FileEdit
 
 class Log:
@@ -70,3 +71,6 @@ class Log:
         FileEdit.append(Log.filepath, f'{Log.line}: {text}')
 
         Log.line += 1
+
+    def dump():
+        return File.get(Log.filepath)

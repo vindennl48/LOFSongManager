@@ -2,7 +2,6 @@ import sys
 from src.Discord import Discord
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
-from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
 from src.menus.menu_advanced import menu_advanced
 from src.menus.menu_open_project import menu_open_category
@@ -32,7 +31,6 @@ def menu_main():
         if not Menu.notice:
             Menu.notice = "A fatal error has occurred."
 
-            content = File.get(Log.filepath)
-            Discord().post_log(content)
+            Discord().post_log(Log.dump())
 
     menu_main()

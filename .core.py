@@ -31,7 +31,8 @@ def start_main_program():
             ],
             clear = False
         ).press_enter()
-        Discord.upload_log()
+
+        Discord.post_log(Log.dump())
 
 
 ## MAIN FUNCTION

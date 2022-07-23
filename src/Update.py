@@ -3,7 +3,6 @@ from src.Dev import Dev
 from pathlib import Path
 from decimal import Decimal
 from src.Discord import Discord
-from src.FileManagement.File import File
 from src.TERMGUI.Run import Run
 from src.TERMGUI.Log import Log
 from src.Settings import Settings
@@ -42,8 +41,7 @@ class Update:
                 ans = Run.prg("python", migration.absolute(), useSubprocess=True)
 
                 if ans == 0:
-                    content = File.get(Log.filepath)
-                    Discord().post_log(content)
+                    Discord().post_log(Log.dump())
 
                     Log(f'There was a problem loading this migration file!\n "{migration.absolute()}"',"warning")
                     Log.press_enter()
