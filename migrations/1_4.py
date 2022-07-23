@@ -7,6 +7,7 @@ parentdir  = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 ##########################################
 
+from src.Discord import Discord
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
