@@ -4,76 +4,63 @@ from src.Settings import Settings
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 
+from discord_webhook import DiscordWebhook
+
 
 class Discord:
 
-    headers = {
-        "Content-Type": "application/json"
-    }
+    def __init__(self, content = "", quiet = False):
+        self.content = content
+        self.quiet = quiet
+        self.dev = True if Dev.isDev() else False
+        self.username = Settings.get_username(capitalize = True)
 
-    def __init__(self, text, endpoint="prod", quiet=False):
-        endpoint = "dev" if Dev.isDev() else endpoint
-        self._send_notification(text, endpoint, quiet)
+        self._set_endpoint()
+        print(self.endpoint)
 
-    def get_nice_username():
-        return Settings.get_username(capitalize=True)
+    def _set_endpoint(self):
+        if self.dev:
+            endpoint = self._dev_endpoint()
+        else:
+            endpoint = self._prod_endpoint()
 
-    def make_nice_project_name(name):
-        return f'"{name.replace("_"," ")}"'.capitalize()
+        self.endpoint = endpoint
 
-    def upload_log():
-        log = File.get(Log.filepath)
-        Discord(
-            text     = f'{Settings.get_username(capitalize=True)} Log',
-            endpoint = "dev",
-            quiet    = True
-        )
-        Discord(
-            text     = log,
-            endpoint = "dev",
-            quiet    = True
-        )
+    def _dev_endpoint(self):
+        return Settings.get_key(Settings.discord_dev_key)
 
-    def send_link(link_name, ID):
-        username = Discord.get_nice_username()
-        link     = f'{username} uploaded {link_name}: https://drive.google.com/file/d/{ID}'
-        Discord(link)
+    def _prod_endpoint(self):
+        return Settings.get_key(Settings.discord_prod_key)
 
-    # PRIVATE
+    def post(self):
+        webhook = self._build_webhook()
 
-    def _send_notification(self, text, endpoint="prod", quiet=False):
-        data = { "text": text }
+        if not self.quiet:
+            Log("Sending Discord notification...")
+            Log(f'{webhook}')
 
-        if not quiet:
-            Log("Sending Discord notification..")
+        response = webhook.execute()
 
-        # Attempt to send notification 5x
-        i = 0
-        while i < 5:
-            try:
-                requests.post(
-                    self._get_endpoint_key(endpoint),
-                    data    = json.dumps(data),
-                    headers = Discord.headers,
-                )
+        if not self.quiet:
+            if response.ok:
+                Log("Notification webhook succeeded")
+            else:
+                Log('Notification webhook failed: {response}')
 
-                i = 10
-            except:
-                i += 1
-                Log(f'Discord notification failed to send! Try: {i}', "warning")
+    def _build_webhook(self):
+        url = self.endpoint
+        content = self.content
 
-        if i != 10:
-            Log(f'Discord notification failed to send! Skipping notification..', "warning")
+        return DiscordWebhook(url = url, rate_limit_retry = True, content = content)
 
-        if not quiet and i == 10:
-            Log(f'Discord ({endpoint}): "{text}"')
-            Log("Discord Notification Sent!")
 
-    def _get_endpoint_key(self, endpoint):
-        if endpoint == "dev":
-            return Settings.get_key(Settings.discord_dev_key)
-        elif endpoint == "prod":
-            return Settings.get_key(Settings.discord_prod_key)
+    def post_link(self, url, ID):
+        name = self.username
+        text = f'{name} uploaded {url}: https://drive.google.com/file/d/{ID}'
+
+        self.content = text
+
+        self.post()
 
     def reset_discord_endpoints():
         Settings.set_key(Settings.discord_prod_key, "")

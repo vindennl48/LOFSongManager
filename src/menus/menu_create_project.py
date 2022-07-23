@@ -22,6 +22,7 @@ def menu_create_project():
 
         name = dialog.get_result("Name")
         name = name.replace(" ", "_").lower()
+        nice_name = f'"{name.replace("_"," ")}"'.capitalize()
 
         template          = Path('templates/template_01.song')
         new_song          = Path(f'extracted_songs/{name}/{name}.song')
@@ -34,7 +35,7 @@ def menu_create_project():
         for location in ["Media","Bounces","Mixdown"]:
             Folder.create( new_song.parent/location )
 
-        Log(f'New song "{Discord.make_nice_project_name(name)}" created!', "notice")
+        Log(f'New song "{nice_name}" created!', "notice")
         Log.press_enter()
 
         return True

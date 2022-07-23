@@ -55,7 +55,7 @@ class Upload:
             self.entry.data["hash"] = Hash.get_project_hash(self)
             self.entry.update()
 
-            Discord(f'{Discord.get_nice_username()} uploaded a new version of {Discord.make_nice_project_name(self.entry.name)}')
+            Discord(f'{Discord.get_nice_username()} uploaded a new version of {Discord.make_nice_project_name(self.entry.name)}').post()
 
             # Remove name from dirty list
             self.remove_dirty()

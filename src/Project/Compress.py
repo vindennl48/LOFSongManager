@@ -91,7 +91,7 @@ class Compress:
                 )
 
                 audio_type = "Scratch" if mp3.parent.name == "Media" else "#MIXDOWN#"
-                Discord.send_link(
+                Discord().post_link(
                     link_name = f'{audio_type} for {self.entry.name}, "{mp3.name}"',
                     ID        = mp3_id
                 )
