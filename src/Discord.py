@@ -91,7 +91,7 @@ class Discord:
         self.post()
 
     def post_log(self, content, quiet = True):
-        log = f"{self.username} – Log: {content}"
+        log = f"Log – {self.username}:\n\n{content}"
 
         self.content = log
         self.quiet = quiet
