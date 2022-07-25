@@ -29,23 +29,33 @@ class Discord:
         self.endpoint = endpoint
 
     def post(self):
-        webhook = self.build_webhook()
+        self.webhook = self.build_webhook()
+        self.response = self.webhook.execute()
 
-        if not self.quiet:
-            Log("Sending Discord notification")
-
-        response = webhook.execute()
-
-        if not self.quiet and not response.ok:
-            Log("Notification webhook failed:")
-            Log(f"  Webhook: {inspect.getmembers(webhook)}")
-            Log(f"  Response: {inspect.getmembers(response)}")
+        self.log_request_response()
 
     def build_webhook(self):
         return DiscordWebhook(
                 url = self.endpoint,
                 rate_limit_retry = True,
                 content = self.content)
+
+    def log_request_response(self):
+        if self.quiet:
+            return None
+
+        if not self.response:
+            Log("Notification webhook did not complete:")
+            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
+
+        if not self.response.ok:
+            Log("Notification webhook failed:")
+            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
+            Log(f"  Response: {inspect.getmembers(self.response)}")
+        else:
+            Log("Notification webhook succeeded:")
+            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
+            Log(f"  Response: {inspect.getmembers(self.response)}")
 
     def post_link(self, link_title, url):
         description = f"{self.username} uploaded {link_title}"
