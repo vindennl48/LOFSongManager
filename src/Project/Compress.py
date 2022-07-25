@@ -95,7 +95,9 @@ class Compress:
                 link_title = f'{audio_type} for {self.entry.name}, "{mp3.name}"'
                 url        = Drive.file_url(mp3_id)
 
-                Discord().post_link(link_title, url)
+                # Send a notification to Discord
+                args = { "type": "link", "content": { "title": link_title, "url": url }
+                Discord.notify(args)
             else:
                 Log(f'Audio file "{mp3.name}" already exists on the cloud!',"sub")
 

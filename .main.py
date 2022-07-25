@@ -1,6 +1,7 @@
 import traceback,sys
 from src.Update import Update
 from src.Settings import Settings
+from src.Discord import Discord
 from src.TERMGUI.Log import Log
 from src.FileManagement.Folder import Folder
 from src.menus.menu_main import menu_main

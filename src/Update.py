@@ -41,7 +41,8 @@ class Update:
                 ans = Run.prg("python", migration.absolute(), useSubprocess=True)
 
                 if ans == 0:
-                    Discord().post_log(Log.dump())
+                    args = { "type": "log", "content": Log.dump() }
+                    Discord.notify(args)
 
                     Log(f'There was a problem loading this migration file!\n "{migration.absolute()}"',"warning")
                     Log.press_enter()
@@ -56,6 +57,7 @@ class Update:
 
                 # Push a notification to Discord
                 content = f"{Settings.get_username(capitalize=True)} has upgraded to V{migration_version}!"
-                Discord().post_message(content)
+                args = { "type": "message", "content": content }
+                Discord.notify(args)
 
         return result

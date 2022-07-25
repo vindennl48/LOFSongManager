@@ -31,6 +31,7 @@ def menu_main():
         if not Menu.notice:
             Menu.notice = "A fatal error has occurred."
 
-            Discord().post_log(Log.dump())
+            args = { "type": "log", "content": Log.dump() }
+            Discord.notify(args)
 
     menu_main()

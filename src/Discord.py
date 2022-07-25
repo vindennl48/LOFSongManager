@@ -1,4 +1,5 @@
-import requests, json
+import inspect, json, requests
+
 from src.Dev import Dev
 from src.Settings import Settings
 from src.TERMGUI.Log import Log
@@ -11,8 +12,28 @@ class Discord:
     dev_endpoint = Settings.get_key(Settings.discord_dev_key)
     prod_endpoint = Settings.get_key(Settings.discord_prod_key)
 
+    @classmethod
+    def notify(cls, post_data):
+        discord = cls()
+
+        type = post_data["type"]
+        content = post_data["content"]
+
+        if type == "message":
+            discord.post_message(content)
+        elif type == "link":
+            title = content["title"]
+            url = content["url"]
+
+            discord.post_link(title, url)
+        elif type == "log":
+            discord.post_log(content)
+        else:
+            return false
+
+        return discord.response
+
     def __init__(self, quiet = False):
-        self.content = content
         self.quiet = quiet
 
         self.dev = True if Dev.isDev() else False

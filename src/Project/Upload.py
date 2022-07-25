@@ -59,7 +59,8 @@ class Upload:
             username     = Settings.get_username(capitalize = True)
             project_name = f'"{self.entry.name.replace("_"," ")}"'.capitalize()
             content      = f"{username} uploaded a new version of {nice_name}"
-            Discord().post_message(content)
+            args         = { "type": "message", "content": content }
+            Discord.notify(args)
 
             # Remove name from dirty list
             self.remove_dirty()
