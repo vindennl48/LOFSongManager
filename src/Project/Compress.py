@@ -3,7 +3,7 @@ from src.Dev import Dev
 from src.Hash import Hash
 from src.Drive import Drive
 from src.Audio import Audio
-from src.Slack import Slack
+from src.Discord import Discord
 from src.TERMGUI.Log import Log
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
@@ -91,7 +91,7 @@ class Compress:
                 )
 
                 audio_type = "Scratch" if mp3.parent.name == "Media" else "#MIXDOWN#"
-                Slack.send_link(
+                Discord.send_link(
                     link_name = f'{audio_type} for {self.entry.name}, "{mp3.name}"',
                     ID        = mp3_id
                 )

@@ -1,5 +1,5 @@
 import sys
-from src.Slack import Slack
+from src.Discord import Discord
 from src.TERMGUI.Log import Log
 from src.TERMGUI.Menu import Menu
 from src.FileManagement.Folder import Folder
@@ -30,6 +30,6 @@ def menu_main():
     if not options[menu.get_result()][1]():
         if not Menu.notice:
             Menu.notice = "An Error Has Occurred.."
-            Slack.upload_log()
+            Discord.upload_log()
 
     menu_main()
