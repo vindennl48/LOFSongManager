@@ -72,6 +72,7 @@ class Project(Base, Upload, Download, Extract, Compress, Open, Dummy, Delete):
 
         return True
 
+
     ## DIALOGS ##
 
     def dialog_choose_category(self, back=True):

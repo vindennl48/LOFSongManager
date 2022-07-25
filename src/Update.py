@@ -55,8 +55,7 @@ class Update:
                 Settings.set_version(migration_version)
 
                 # Push a notification to Discord
-                content = f"{Settings.get_username(capitalize=True)} has " \
-                        "upgraded to V{migration_version}!"
+                content = f"{Settings.get_username(capitalize=True)} has upgraded to V{migration_version}!"
                 Discord().post_message(content)
 
         return result
