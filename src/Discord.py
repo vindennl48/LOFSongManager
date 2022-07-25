@@ -45,17 +45,17 @@ class Discord:
             return None
 
         if not self.response:
-            Log("Notification webhook did not complete:")
-            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
+            Log("Notification webhook did not complete:", "warning")
+            Log(f"Webhook: {inspect.getmembers(self.webhook)}", "sub")
 
         if not self.response.ok:
-            Log("Notification webhook failed:")
-            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
-            Log(f"  Response: {inspect.getmembers(self.response)}")
+            Log("Notification webhook failed:", "warning")
+            Log(f"Webhook: {inspect.getmembers(self.webhook)}", "sub")
+            Log(f"Response: {inspect.getmembers(self.response)}", "sub")
         else:
-            Log("Notification webhook succeeded:")
-            Log(f"  Webhook: {inspect.getmembers(self.webhook)}")
-            Log(f"  Response: {inspect.getmembers(self.response)}")
+            Log("Notification webhook succeeded:", "warning")
+            Log(f"Webhook: {inspect.getmembers(self.webhook)}", "sub")
+            Log(f"Response: {inspect.getmembers(self.response)}", "sub")
 
     def post_link(self, link_title, url):
         description = f"{self.username} uploaded {link_title}"
