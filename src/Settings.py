@@ -7,15 +7,15 @@ from src.TERMGUI.Dialog import Dialog
 class Settings:
 
     filepath       = Path(".settings")
-    slack_prod_key = "slack_endpoint_prod"
-    slack_dev_key  = "slack_endpoint_dev"
+    discord_prod_key = "discord_endpoint_prod"
+    discord_dev_key  = "discord_endpoint_dev"
 
     def create():
         if not Settings.filepath.exists():
             File.set_json(Settings.filepath.absolute(), {})
             Settings.set_username()
             Settings.set_version("0.0")
-            Settings.set_slack_endpoints()
+            Settings.set_discord_endpoints()
 
     def set_key(key, data):
         Settings.create()
@@ -74,3 +74,43 @@ class Settings:
             username = username.capitalize()
 
         return username
+
+    def reset_discord_endpoints():
+        Settings.set_key(Settings.discord_prod_key, "")
+        Settings.set_key(Settings.discord_dev_key, "")
+        Settings.set_discord_endpoints()
+
+    def check_discord_endpoints():
+        settings = Settings.get_all()
+
+        if not Settings.discord_prod_key in settings or \
+           not Settings.discord_dev_key in settings:
+            return False
+
+        if settings[Settings.discord_prod_key] == "" or \
+           settings[Settings.discord_dev_key] == "":
+            return False
+
+        return True
+
+    def set_discord_endpoints():
+        if not Settings.check_discord_endpoints():
+            drive = Drive()
+
+            Settings.set_key(
+                key  = Settings.discord_prod_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.discord_prod_key
+                )
+            )
+
+            Settings.set_key(
+                key  = Settings.discord_dev_key,
+                data = drive.get_json_key(
+                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
+                    local_filepath = f'temp/db.json',
+                    key            = Settings.discord_dev_key
+                )
+            )
