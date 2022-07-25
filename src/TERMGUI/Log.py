@@ -1,6 +1,6 @@
 import textwrap, os
 from datetime import datetime
-from src.FileManagement.File import File
+from pathlib import Path
 from src.FileManagement.FileEdit import FileEdit
 
 class Log:
@@ -73,4 +73,11 @@ class Log:
         Log.line += 1
 
     def dump():
-        return File.get(Log.filepath)
+        filepath = Path(Log.filepath)
+        result   = None
+
+        if filepath.exists():
+            with open(filepath.absolute()) as f:
+                result = f.read()
+
+        return result

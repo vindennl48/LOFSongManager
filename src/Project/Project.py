@@ -32,9 +32,6 @@ class Project(Base, Upload, Download, Extract, Compress, Open, Dummy, Delete):
         project.entry = entry
         return project
 
-    def nice_name(name):
-        return f'"{name.replace("_"," ")}"'.capitalize()
-
     def __init__(self, name):
         self.entry = Entry(PROJECT_MODEL, name, deepcopy(DEFAULT_ENTRY_DATA))
         # Check to see if this already exists online

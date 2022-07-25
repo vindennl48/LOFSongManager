@@ -6,7 +6,6 @@ from src.TERMGUI.Log import Log
 from src.TERMGUI.Dialog import Dialog
 from src.FileManagement.File import File
 from src.FileManagement.Folder import Folder
-from src.Project.Project import Project
 
 class Upload:
     def upload_project(self):
@@ -56,9 +55,10 @@ class Upload:
             self.entry.data["hash"] = Hash.get_project_hash(self)
             self.entry.update()
 
-            username = Settings.get_username(capitalize = True)
-            content = f"{username} uploaded a new version of " \
-                    "{Project.nice_name(self.entry.name)}"
+            # Send an upload notification to Discord
+            username     = Settings.get_username(capitalize = True)
+            project_name = f'"{self.entry.name.replace("_"," ")}"'.capitalize()
+            content      = f"{username} uploaded a new version of {nice_name}"
             Discord().post_message(content)
 
             # Remove name from dirty list
