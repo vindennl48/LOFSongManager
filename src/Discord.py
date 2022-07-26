@@ -62,8 +62,6 @@ class Discord:
                     Log(f"Response:{formatted_response}", "sub")
                 else:
                     Log("Notification webhook succeeded:", "notice")
-                    Log(f"Webhook:{formatted_request}", "sub")
-                    Log(f"Response:{formatted_response}", "sub")
 
     def _get_endpoint_key(self, endpoint):
         if endpoint == "dev":
