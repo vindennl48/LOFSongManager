@@ -75,42 +75,21 @@ class Settings:
 
         return username
 
-    def reset_discord_endpoints():
-        Settings.set_key(Settings.discord_prod_key, "")
-        Settings.set_key(Settings.discord_dev_key, "")
-        Settings.set_discord_endpoints()
-
-    def check_discord_endpoints():
-        settings = Settings.get_all()
-
-        if not Settings.discord_prod_key in settings or \
-           not Settings.discord_dev_key in settings:
-            return False
-
-        if settings[Settings.discord_prod_key] == "" or \
-           settings[Settings.discord_dev_key] == "":
-            return False
-
-        return True
-
     def set_discord_endpoints():
-        if not Settings.check_discord_endpoints():
-            drive = Drive()
-
-            Settings.set_key(
-                key  = Settings.discord_prod_key,
-                data = drive.get_json_key(
-                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
-                    local_filepath = f'temp/db.json',
-                    key            = Settings.discord_prod_key
-                )
-            )
-
-            Settings.set_key(
-                key  = Settings.discord_dev_key,
-                data = drive.get_json_key(
-                    remote_file    = f'{LOFSM_DIR_PATH}/db.json',
-                    local_filepath = f'temp/db.json',
-                    key            = Settings.discord_dev_key
-                )
-            )
+        dialog = Dialog(
+            title = "Discord Integration Setup",
+            body = [
+                f'Enter the production and development webhook URLs to finish',
+                f'setting up Discord Integration.',
+                f'\n',
+                f'\n',
+            ]
+        )
+        Settings.set_key(
+            "discord_endpoint_prod",
+            dialog.get_result("Production Endpoint URL")
+        )
+        Settings.set_key(
+            "discord_endpoint_dev",
+            dialog.get_result("Development Endpoint URL")
+        )
